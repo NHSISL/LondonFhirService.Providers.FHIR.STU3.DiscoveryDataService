@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Infrastructure/">
+    <Project Path="LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastructure/LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastructure.csproj" />
+  </Folder>
+  <Project Path="LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Acceptance/LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Acceptance.csproj" />
+  <Project Path="LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit/LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.csproj" />
+  <Project Path="LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService/LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.csproj" />
+</Solution>

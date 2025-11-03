@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<Title>LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService</Title>
+		<Product>LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService</Product>
+		<PackageId>LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService</PackageId>
+		<Authors>North East London ICB</Authors>
+		<Company>North East London ICB</Company>
+		<Description>
+			LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService provider for FHIR resources.
+		</Description>
+		<Copyright>North East London ICB - 2025 (c)</Copyright>
+		<PackageIcon>fhir.png</PackageIcon>
+		<PackageProjectUrl>https://github.com/NHSISL/LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/NHSISL/LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>NHSISL; FHIR; Provider; DDS; Data Discovery Service; .NET; The Standard; Standard;</PackageTags>
+		<PackageReleaseNotes>
+			Initial release of LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.
+		</PackageReleaseNotes>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<Version>0.0.0.1</Version>
+		<AssemblyVersion>0.0.0.1</AssemblyVersion>
+		<FileVersion>0.0.0.1</FileVersion>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<IsPackable>true</IsPackable>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<NoWarn>CS1998</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>true</Pack>
+			<PackagePath></PackagePath>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Include="..\LICENSE.txt">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\Resources\Images\fhir.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Hl7.Fhir.STU3" Version="5.12.1" />
+	  <PackageReference Include="Xeption" Version="2.8.0" />
+	</ItemGroup>
+
+</Project>
