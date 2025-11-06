@@ -108,7 +108,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 
             var expiresInString = doc.RootElement.GetProperty("expires_in").GetString();
 
-            if (!int.TryParse(expiresInString, out var expiresIn))
+            if (expiresInString is null || !int.TryParse(expiresInString, out var expiresIn))
             {
                 throw new InvalidOperationException("Invalid expires_in value");
             }
