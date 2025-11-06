@@ -8,14 +8,18 @@ using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
 {
-    public class PatientService : IPatientService
+    public partial class PatientService : IPatientService
     {
         private readonly IDdsHttpBroker ddsHttpBroker;
 
         public PatientService(IDdsHttpBroker ddsHttpBroker) =>
             this.ddsHttpBroker = ddsHttpBroker;
 
-        public ValueTask<Bundle> GetStructuredPatientAsync(string id) =>
-            this.ddsHttpBroker.GetStructuredPatientAsync(id);
+        public ValueTask<Bundle> GetStructuredPatientAsync(string id)
+        {
+            ValidateArgsOnGetStructuredPatient(id);
+
+            return this.ddsHttpBroker.GetStructuredPatientAsync(id);
+        }
     }
 }
