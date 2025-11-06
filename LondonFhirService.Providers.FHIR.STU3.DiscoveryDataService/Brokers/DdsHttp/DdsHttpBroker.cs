@@ -119,7 +119,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
         private async Task SetupApiClientAsync()
         {
             await GetAccessTokenAsync();
-            var httpClient = httpClientFactory.CreateClient("ApiClient");
+            HttpClient httpClient = httpClientFactory.CreateClient("ApiClient");
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/fhir+json");
 
             httpClient.DefaultRequestHeaders.Authorization =
