@@ -125,7 +125,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue(
                     scheme: "Bearer",
-                    parameter: this.accessToken ?? "");
+                    parameter: this.accessToken);
 
             this.apiClient = new RESTFulApiFactoryClient(httpClient);
         }
