@@ -92,7 +92,10 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
                 response.EnsureSuccessStatusCode();
                 var json = await response.Content.ReadAsStringAsync();
                 using var doc = JsonDocument.Parse(json);
-                accessToken = doc.RootElement.GetProperty("access_token").GetString();
+
+                accessToken = doc.RootElement.GetProperty("access_token").GetString()
+                    ?? throw new InvalidOperationException("Access token is null");
+
                 var expiresInString = doc.RootElement.GetProperty("expires_in").GetString();
 
                 if (!int.TryParse(expiresInString, out var expiresIn))
