@@ -6,6 +6,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
@@ -16,6 +17,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
     public class DdsHttpBroker : IDdsHttpBroker
     {
         private readonly DdsHttpConfigurations ddsHttpConfigurations;
+        private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
         private IRESTFulApiFactoryClient? apiClient = null;
         private string accessToken = string.Empty;
         private DateTimeOffset tokenExpiry = DateTimeOffset.MinValue;
@@ -61,9 +63,18 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 
         private async ValueTask<T> PostAsync<T>(string relativeUrl, StringContent bodyContent)
         {
-            if (apiClient is null || DateTimeOffset.UtcNow >= tokenExpiry)
+            await semaphore.WaitAsync();
+
+            try
             {
-                await SetupApiClient();
+                if (apiClient is null || DateTimeOffset.UtcNow >= tokenExpiry)
+                {
+                    await SetupApiClient();
+                }
+            }
+            finally
+            {
+                semaphore.Release();
             }
 
             if (apiClient is null)
