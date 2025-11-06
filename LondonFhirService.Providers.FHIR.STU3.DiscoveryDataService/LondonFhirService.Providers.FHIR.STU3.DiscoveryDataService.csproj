@@ -50,6 +50,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Hl7.Fhir.STU3" Version="5.12.1" />
+	  <PackageReference Include="RESTFulSense" Version="3.2.0" />
 	  <PackageReference Include="Xeption" Version="2.8.0" />
 	</ItemGroup>
 
