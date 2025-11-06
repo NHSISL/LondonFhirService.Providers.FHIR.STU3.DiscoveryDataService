@@ -18,6 +18,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
     {
         private readonly DdsHttpConfigurations ddsHttpConfigurations;
         private readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
+        private readonly HttpClient httpClient;
         private IRESTFulApiFactoryClient? apiClient = null;
         private string accessToken = string.Empty;
         private DateTimeOffset tokenExpiry = DateTimeOffset.MinValue;
@@ -25,6 +26,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
         public DdsHttpBroker(DdsHttpConfigurations ddsHttpConfigurations)
         {
             this.ddsHttpConfigurations = ddsHttpConfigurations;
+            this.httpClient = new HttpClient();
         }
 
         public async ValueTask<Bundle> GetStructuredPatientAsync(string id)
@@ -114,7 +116,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
                     throw new InvalidOperationException("Invalid expires_in value");
                 }
 
-
                 tokenExpiry = DateTimeOffset.UtcNow.AddSeconds(expiresIn - 30);
             }
         }
@@ -123,15 +124,14 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
         {
             await GetAccessTokenAsync();
 
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Add("Accept", "application/fhir+json");
+            this.httpClient.DefaultRequestHeaders.Add("Accept", "application/fhir+json");
 
-            httpClient.DefaultRequestHeaders.Authorization =
+            this.httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue(
                     scheme: "Bearer",
                     parameter: this.accessToken ?? "");
 
-            this.apiClient = new RESTFulApiFactoryClient(httpClient);
+            this.apiClient = new RESTFulApiFactoryClient(this.httpClient);
         }
     }
 }

@@ -2,13 +2,6 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------
 
-using ADotNet.Clients;
-using ADotNet.Models.Pipelines.GithubPipelines.DotNets;
-using ADotNet.Models.Pipelines.GithubPipelines.DotNets.Tasks;
-using ADotNet.Models.Pipelines.GithubPipelines.DotNets.Tasks.SetupDotNetTaskV3s;
-using System.Collections.Generic;
-using System.IO;
-
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastructure.Services
 {
     internal class ScriptGenerationService
