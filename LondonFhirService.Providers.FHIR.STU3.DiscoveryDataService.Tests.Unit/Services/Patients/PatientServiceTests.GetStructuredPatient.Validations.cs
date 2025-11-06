@@ -41,6 +41,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
 
             // then
             actualException.Should().BeEquivalentTo(expectedPatientValidationException);
+
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
         }
     }
 }
