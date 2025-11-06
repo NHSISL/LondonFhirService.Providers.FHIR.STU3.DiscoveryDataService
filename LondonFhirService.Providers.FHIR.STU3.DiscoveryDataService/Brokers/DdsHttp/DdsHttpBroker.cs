@@ -1,11 +1,15 @@
-﻿using Hl7.Fhir.Model;
-using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
-using RESTFulSense.Clients;
+﻿// ---------------------------------------------------------
+// Copyright (c) North East London ICB. All rights reserved.
+// ---------------------------------------------------------
+
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Hl7.Fhir.Model;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
+using RESTFulSense.Clients;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp
 {
@@ -19,7 +23,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
         public DdsHttpBroker(DdsHttpConfigurations ddsHttpConfigurations)
         {
             this.ddsHttpConfigurations = ddsHttpConfigurations;
-            this.apiClient = null;
         }
 
         public async ValueTask<Bundle> GetStructuredPatientAsync(string id)
@@ -43,12 +46,12 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
                             system = "https://fhir.nhs.uk/Id/nhs-number",
                             value = id
                         }
-                    },
+                    }
                 }
             };
 
             string jsonContent = JsonSerializer.Serialize(requestBody);
-            var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+            using var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
 
             Bundle bundle =
                 await PostAsync<Bundle>($"{ddsHttpConfigurations.BaseUrl}/patient/$get-structured-record", content);
@@ -68,14 +71,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
                 throw new InvalidOperationException("Failed to setup API client");
             }
 
-            if (typeof(T) == typeof(string))
-            {
-                return (T)(object)await this.apiClient.PostContentAsync<StringContent, T>(relativeUrl, bodyContent);
-            }
-            else
-            {
-                return await this.apiClient.PostContentAsync<StringContent, T>(relativeUrl, bodyContent);
-            }
+            return await this.apiClient.PostContentAsync<StringContent, T>(relativeUrl, bodyContent);
         }
 
         private async ValueTask GetAccessTokenAsync()
@@ -90,14 +86,21 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
                 };
 
                 string jsonContent = JsonSerializer.Serialize(requestBody);
-                var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+                using var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
 
                 var response = await httpClient.PostAsync(ddsHttpConfigurations.AuthorisationUrl, content);
                 response.EnsureSuccessStatusCode();
                 var json = await response.Content.ReadAsStringAsync();
                 using var doc = JsonDocument.Parse(json);
                 accessToken = doc.RootElement.GetProperty("access_token").GetString();
-                var expiresIn = int.Parse(doc.RootElement.GetProperty("expires_in").GetString());
+                var expiresInString = doc.RootElement.GetProperty("expires_in").GetString();
+
+                if (!int.TryParse(expiresInString, out var expiresIn))
+                {
+                    throw new InvalidOperationException("Invalid expires_in value");
+                }
+
+
                 tokenExpiry = DateTimeOffset.UtcNow.AddSeconds(expiresIn - 30);
             }
         }
@@ -106,7 +109,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
         {
             await GetAccessTokenAsync();
 
-            var httpClient = new HttpClient();
+            using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Add("Accept", "application/fhir+json");
 
             httpClient.DefaultRequestHeaders.Authorization =
