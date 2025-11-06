@@ -46,6 +46,12 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastruct
 
                             Steps = new List<GithubTask>
                             {
+                                new GithubTask
+                                {
+                                    Name = "Enable long paths for Git",
+                                    Run = "git config --system core.longpaths true"
+                                },
+
                                 new CheckoutTaskV3
                                 {
                                     Name = "Check out"
