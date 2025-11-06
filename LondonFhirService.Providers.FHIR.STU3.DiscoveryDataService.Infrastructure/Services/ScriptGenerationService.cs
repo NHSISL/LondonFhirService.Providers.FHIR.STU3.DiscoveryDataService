@@ -2,12 +2,12 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------
 
-using System.Collections.Generic;
-using System.IO;
 using ADotNet.Clients;
 using ADotNet.Models.Pipelines.GithubPipelines.DotNets;
 using ADotNet.Models.Pipelines.GithubPipelines.DotNets.Tasks;
 using ADotNet.Models.Pipelines.GithubPipelines.DotNets.Tasks.SetupDotNetTaskV3s;
+using System.Collections.Generic;
+using System.IO;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastructure.Services
 {
@@ -46,6 +46,11 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastruct
 
                             Steps = new List<GithubTask>
                             {
+                                new GithubTask
+                                {
+                                    Name = "Enable long paths for Git",
+                                    Run = "git config --system core.longpaths true"
+                                },
                                 new CheckoutTaskV3
                                 {
                                     Name = "Check out"
