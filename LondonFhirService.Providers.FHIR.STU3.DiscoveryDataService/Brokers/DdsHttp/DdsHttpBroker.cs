@@ -87,7 +87,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 
         private async ValueTask GetAccessTokenAsync()
         {
-            using var httpClient = httpClientFactory.CreateClient("TokenClient");
+            var httpClient = httpClientFactory.CreateClient("TokenClient");
 
             var requestBody = new
             {
