@@ -15,11 +15,12 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
         public PatientService(IDdsHttpBroker ddsHttpBroker) =>
             this.ddsHttpBroker = ddsHttpBroker;
 
-        public ValueTask<Bundle> GetStructuredPatientAsync(string id)
-        {
-            ValidateArgsOnGetStructuredPatient(id);
+        public ValueTask<Bundle> GetStructuredPatientAsync(string id) =>
+            TryCatch(async () =>
+            {
+                ValidateArgsOnGetStructuredPatient(id);
 
-            return this.ddsHttpBroker.GetStructuredPatientAsync(id);
-        }
+                return await this.ddsHttpBroker.GetStructuredPatientAsync(id);
+            });
     }
 }
