@@ -6,6 +6,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
@@ -17,8 +18,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
     public class DdsHttpBroker : IDdsHttpBroker
     {
         private readonly DdsHttpConfigurations ddsHttpConfigurations;
-        private Task? setupTask = null;
         private readonly IHttpClientFactory httpClientFactory;
+        private readonly SemaphoreSlim setupGate = new(1, 1);
         private IRESTFulApiFactoryClient? apiClient = null;
         private string accessToken = string.Empty;
         private DateTimeOffset tokenExpiry = DateTimeOffset.MinValue;
@@ -59,30 +60,33 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             string jsonContent = JsonSerializer.Serialize(requestBody);
             using var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
 
-            Bundle bundle =
-                await PostAsync<Bundle>($"{ddsHttpConfigurations.BaseUrl}/patient/$get-structured-record", content);
+            await EnsureClientAsync();
 
-            return bundle;
+            return await apiClient!.PostContentAsync<StringContent, Bundle>(
+                $"{ddsHttpConfigurations.BaseUrl}/patient/$get-structured-record",
+                content);
         }
 
-        private async ValueTask<T> PostAsync<T>(string relativeUrl, StringContent bodyContent)
+        private async Task EnsureClientAsync()
         {
-            if (apiClient is null || DateTimeOffset.UtcNow >= tokenExpiry)
+            if (apiClient is not null && DateTimeOffset.UtcNow < tokenExpiry)
             {
-                if (setupTask is null || setupTask.IsCompleted)
+                return;
+            }
+
+            await setupGate.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                if (apiClient is null || DateTimeOffset.UtcNow >= tokenExpiry)
                 {
-                    setupTask = SetupApiClientAsync();
+                    await SetupApiClientAsync().ConfigureAwait(false);
                 }
-
-                await setupTask;
             }
-
-            if (apiClient is null)
+            finally
             {
-                throw new InvalidOperationException("Failed to setup API client");
+                setupGate.Release();
             }
-
-            return await this.apiClient.PostContentAsync<StringContent, T>(relativeUrl, bodyContent);
         }
 
         private async ValueTask GetAccessTokenAsync()
@@ -100,7 +104,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             using var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
             var response = await httpClient.PostAsync(ddsHttpConfigurations.AuthorisationUrl, content);
             response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync();
+            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             using var doc = JsonDocument.Parse(json);
 
             this.accessToken = doc.RootElement.GetProperty("access_token").GetString()
@@ -118,7 +122,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 
         private async Task SetupApiClientAsync()
         {
-            await GetAccessTokenAsync();
+            await GetAccessTokenAsync().ConfigureAwait(false);
             HttpClient httpClient = httpClientFactory.CreateClient("ApiClient");
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/fhir+json");
 
