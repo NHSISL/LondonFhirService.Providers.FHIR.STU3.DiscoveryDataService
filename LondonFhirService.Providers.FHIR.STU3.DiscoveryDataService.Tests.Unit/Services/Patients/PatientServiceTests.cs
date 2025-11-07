@@ -74,8 +74,70 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                 Source = GetRandomString()
             };
 
-
             return bundle;
+        }
+
+        private string GetExpectedRequestBody(string nhsNumber, string dateOfBirth)
+        {
+            var parameters = new List<object>
+            {
+                new
+                {
+                    name = "patientNHSNumber",
+                    valueIdentifier = new
+                    {
+                        system = "https://fhir.nhs.uk/Id/nhs-number",
+                        value = nhsNumber
+                    }
+                },
+                new
+                {
+                    name = "demographicsOnly",
+                    part = new object[]
+                    {
+                        new
+                        {
+                            name = "includeDemographicsOnly",
+                            valueBoolean = false
+                        }
+                    }
+                },
+                new
+                {
+                    name = "includeInactivePatients",
+                    part = new object[]
+                    {
+                        new
+                        {
+                            name = "includeInactivePatients",
+                            valueBoolean = false
+                        }
+                    }
+                },
+                new
+                {
+                    name = "patientDOB",
+                    valueIdentifier = new
+                    {
+                        system = "https://fhir.hl7.org.uk/Id/dob",
+                        value = dateOfBirth
+                    }
+                }
+            };
+
+            var requestBody = new
+            {
+                meta = new
+                {
+                    profile = new string[] {
+                        "https://fhir.hl7.org.uk/STU3/OperationDefinition/CareConnect-GetStructuredRecord-Operation-1"
+                    }
+                },
+                resourceType = "Parameters",
+                parameter = parameters
+            };
+
+            return System.Text.Json.JsonSerializer.Serialize(requestBody);
         }
     }
 }

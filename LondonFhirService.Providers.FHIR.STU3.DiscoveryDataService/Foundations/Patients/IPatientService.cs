@@ -9,6 +9,10 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 {
     public interface IPatientService
     {
-        ValueTask<Bundle> GetStructuredPatientAsync(string id);
+        ValueTask<Bundle> GetStructuredPatientAsync(
+            string nhsNumber,
+            string dateOfBirth = "",
+            bool demographicsOnly = false,
+            bool includeInactivePatients = false);
     }
 }

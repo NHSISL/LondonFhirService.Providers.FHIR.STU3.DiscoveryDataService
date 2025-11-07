@@ -4,6 +4,7 @@
 
 using FluentAssertions;
 using Hl7.Fhir.Model;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
 using Moq;
 using Task = System.Threading.Tasks.Task;
 
@@ -15,26 +16,54 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
         public async Task ShouldGetStructuredPatientAsync()
         {
             // given
-            string randomId = GetRandomString();
-            string inputId = randomId;
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+            string randomDateOfBirth = GetRandomString();
+            string inputDateOfBirth = randomDateOfBirth;
+            string expectedRequestBody = GetExpectedRequestBody(inputNhsNumber, inputDateOfBirth);
+            string inputRequestBody = expectedRequestBody;
             Bundle randomBundle = CreateRandomBundle();
             Bundle expectedBundle = randomBundle;
 
+            var patientServiceMock = new Mock<PatientService>(this.ddsHttpBrokerMock.Object)
+            {
+                CallBase = true
+            };
+
+            patientServiceMock.Setup(service =>
+                service.CreateRequestBody(
+                    inputNhsNumber,
+                    inputDateOfBirth,
+                    false,
+                    false))
+                        .Returns(expectedRequestBody);
+
             this.ddsHttpBrokerMock.Setup(broker =>
-                broker.GetStructuredPatientAsync(inputId))
+                broker.GetStructuredPatientAsync(inputRequestBody))
                     .ReturnsAsync(randomBundle);
+
+            PatientService mockedPatientService = patientServiceMock.Object;
 
             // when
             Bundle actualBundle =
-                await this.patientService.GetStructuredPatientAsync(inputId);
+                await mockedPatientService.GetStructuredPatientAsync(inputNhsNumber, inputDateOfBirth, false, false);
 
             // then
             actualBundle.Should().BeEquivalentTo(expectedBundle);
 
+            patientServiceMock.Verify(service =>
+                service.CreateRequestBody(
+                    inputNhsNumber,
+                    inputDateOfBirth,
+                    false,
+                    false),
+                        Times.Once);
+
             this.ddsHttpBrokerMock.Verify(broker =>
-                broker.GetStructuredPatientAsync(inputId),
+                broker.GetStructuredPatientAsync(inputRequestBody),
                     Times.Once);
 
+            patientServiceMock.VerifyNoOtherCalls();
             this.ddsHttpBrokerMock.VerifyNoOtherCalls();
         }
     }

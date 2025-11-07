@@ -32,33 +32,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             this.httpClientFactory = httpClientFactory;
         }
 
-        public async ValueTask<Bundle> GetStructuredPatientAsync(string id)
+        public async ValueTask<Bundle> GetStructuredPatientAsync(string requestBody)
         {
-            var requestBody = new
-            {
-                meta = new
-                {
-                    profile = new string[] {
-                        "https://fhir.hl7.org.uk/STU3/OperationDefinition/CareConnect-GetStructuredRecord-Operation-1"
-                    }
-                },
-                resourceType = "Parameters",
-                parameter = new object[]
-                {
-                    new
-                    {
-                        name = "patientNHSNumber",
-                        valueIdentifier = new
-                        {
-                            system = "https://fhir.nhs.uk/Id/nhs-number",
-                            value = id
-                        }
-                    }
-                }
-            };
-
-            string jsonContent = JsonSerializer.Serialize(requestBody);
-            using var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+            using var content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
 
             await EnsureClientAsync();
 

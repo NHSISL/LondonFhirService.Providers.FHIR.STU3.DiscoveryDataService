@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Hl7.Fhir.Model;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
 using Moq;
 using Task = System.Threading.Tasks.Task;
@@ -19,8 +20,10 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
         {
             // given
             var serviceException = new Exception(GetRandomString());
-            string randomId = GetRandomString();
-            string inputId = randomId;
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+            string randomDateOfBirth = GetRandomString();
+            string inputDateOfBirth = randomDateOfBirth;
 
             var failedServicePatientException =
                 new FailedPatientServiceException(
@@ -33,13 +36,20 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     message: "Patient service error occurred, please contact support.",
                     innerException: failedServicePatientException);
 
-            this.ddsHttpBrokerMock.Setup(broker =>
-                broker.GetStructuredPatientAsync(inputId))
-                    .ThrowsAsync(serviceException);
+            var patientServiceMock = new Mock<PatientService>(this.ddsHttpBrokerMock.Object)
+            {
+                CallBase = true
+            };
+
+            patientServiceMock.Setup(service =>
+                service.CreateRequestBody(inputNhsNumber, inputDateOfBirth, false, false))
+                    .Throws(serviceException);
+
+            PatientService mockedPatientService = patientServiceMock.Object;
 
             // when
             ValueTask<Bundle> getStructuredPatientAsyncAction =
-                patientService.GetStructuredPatientAsync(inputId);
+                mockedPatientService.GetStructuredPatientAsync(inputNhsNumber, inputDateOfBirth, false, false);
 
             PatientServiceException actualException =
                 await Assert.ThrowsAsync<PatientServiceException>(getStructuredPatientAsyncAction.AsTask);
@@ -47,10 +57,15 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             // then
             actualException.Should().BeEquivalentTo(expectedPatientServiceException);
 
-            this.ddsHttpBrokerMock.Verify(broker =>
-                broker.GetStructuredPatientAsync(inputId),
-                    Times.Once);
+            patientServiceMock.Verify(service =>
+                service.CreateRequestBody(
+                    inputNhsNumber,
+                    inputDateOfBirth,
+                    false,
+                    false),
+                        Times.Once);
 
+            patientServiceMock.VerifyNoOtherCalls();
             this.ddsHttpBrokerMock.VerifyNoOtherCalls();
         }
     }
