@@ -9,6 +9,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 {
     public interface IDdsHttpBroker
     {
-        ValueTask<Bundle> GetStructuredPatientAsync(string id);
+        ValueTask<Bundle> GetStructuredPatientAsync(string requestBody);
     }
 }
