@@ -14,5 +14,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             string dateOfBirth = "",
             bool demographicsOnly = false,
             bool includeInactivePatients = false);
+
+        ValueTask<Bundle> EverythingAsync(string id);
     }
 }

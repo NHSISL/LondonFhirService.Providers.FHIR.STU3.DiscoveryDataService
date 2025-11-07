@@ -19,6 +19,15 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                 (Rule: IsInvalid(nhsNumber), Parameter: "nhsNumber"));
         }
 
+        private static void ValidateArgsOnEverything(string id)
+        {
+            Validate(
+                createException: () => new InvalidArgumentPatientServiceException(
+                    message: "Invalid patient service argument, please correct the errors and try again."),
+
+                (Rule: IsInvalid(id), Parameter: "id"));
+        }
+
         private static dynamic IsInvalid(string text) => new
         {
             Condition = string.IsNullOrWhiteSpace(text),
