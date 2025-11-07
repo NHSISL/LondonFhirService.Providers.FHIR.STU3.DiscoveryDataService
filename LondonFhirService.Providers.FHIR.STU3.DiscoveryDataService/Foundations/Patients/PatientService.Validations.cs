@@ -10,13 +10,13 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 {
     public partial class PatientService
     {
-        private static void ValidateArgsOnGetStructuredPatient(string id)
+        private static void ValidateArgsOnGetStructuredPatient(string nhsNumber)
         {
             Validate(
                 createException: () => new InvalidArgumentPatientServiceException(
                     message: "Invalid patient service argument, please correct the errors and try again."),
 
-                (Rule: IsInvalid(id), Parameter: "Id"));
+                (Rule: IsInvalid(nhsNumber), Parameter: "nhsNumber"));
         }
 
         private static dynamic IsInvalid(string text) => new

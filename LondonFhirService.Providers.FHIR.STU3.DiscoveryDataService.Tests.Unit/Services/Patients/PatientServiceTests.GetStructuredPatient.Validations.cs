@@ -24,7 +24,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     "Invalid patient service argument, please correct the errors and try again.");
 
             invalidArgumentPatientServiceException.AddData(
-                key: "Id",
+                key: "nhsNumber",
                 values: "Text is required");
 
             var expectedPatientValidationException =
