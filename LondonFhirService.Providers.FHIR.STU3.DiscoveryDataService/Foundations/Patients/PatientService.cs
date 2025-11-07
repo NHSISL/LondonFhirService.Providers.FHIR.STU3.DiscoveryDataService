@@ -35,6 +35,16 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody);
         });
 
+        public ValueTask<Bundle> EverythingAsync(string id) =>
+        TryCatch(async () =>
+        {
+            ValidateArgsOnEverything(id);
+
+            string requestBody = CreateRequestBody(id);
+
+            return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody);
+        });
+
         virtual internal string CreateRequestBody(
             string nhsNumber,
             string dateOfBirth = "",

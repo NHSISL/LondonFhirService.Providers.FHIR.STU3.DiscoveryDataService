@@ -77,7 +77,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             return bundle;
         }
 
-        private string GetExpectedRequestBody(string nhsNumber, string dateOfBirth)
+        private string GetExpectedRequestBody(string nhsNumber, string dateOfBirth = "")
         {
             var parameters = new List<object>
             {
