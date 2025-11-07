@@ -22,18 +22,18 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             string dateOfBirth = "",
             bool demographicsOnly = false,
             bool includeInactivePatients = false) =>
-                TryCatch(async () =>
-                {
-                    ValidateArgsOnGetStructuredPatient(nhsNumber);
+        TryCatch(async () =>
+        {
+            ValidateArgsOnGetStructuredPatient(nhsNumber);
 
-                    string requestBody = CreateRequestBody(
-                        nhsNumber,
-                        dateOfBirth,
-                        demographicsOnly,
-                        includeInactivePatients);
+            string requestBody = CreateRequestBody(
+                nhsNumber,
+                dateOfBirth,
+                demographicsOnly,
+                includeInactivePatients);
 
-                    return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody);
-                });
+            return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody);
+        });
 
         virtual internal string CreateRequestBody(
             string nhsNumber,
