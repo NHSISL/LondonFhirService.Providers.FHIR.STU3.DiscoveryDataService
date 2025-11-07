@@ -13,7 +13,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
     public partial class PatientServiceTests
     {
         [Fact]
-        public async Task ShoulEverythingAsync()
+        public async Task ShouldEverythingAsync()
         {
             // given
             string randomId = GetRandomString();
