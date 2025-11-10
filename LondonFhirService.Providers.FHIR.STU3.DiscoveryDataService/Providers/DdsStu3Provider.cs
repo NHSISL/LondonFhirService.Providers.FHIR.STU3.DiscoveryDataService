@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
 {
-    public sealed class DdsStu3Provider : FhirProviderBase, IFhirProvider
+    public sealed class DdsStu3Provider : FhirProviderBase, IDdsStu3Provider
     {
         private readonly DdsConfigurations configurations;
         private IPatientResource patientResource { get; set; }
@@ -45,6 +45,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
                 .AddTransient<IPatientResource, PatientResource>()
                 .AddSingleton(configurations);
 
+            HttpClientFactoryServiceCollectionExtensions.AddHttpClient(serviceCollection);
             IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
 
             return serviceProvider;

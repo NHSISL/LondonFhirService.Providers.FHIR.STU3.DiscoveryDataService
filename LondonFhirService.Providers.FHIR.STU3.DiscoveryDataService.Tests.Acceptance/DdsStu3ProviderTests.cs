@@ -1,0 +1,157 @@
+﻿// ---------------------------------------------------------
+// Copyright (c) North East London ICB. All rights reserved.
+// ---------------------------------------------------------
+
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using Hl7.Fhir.Model;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers;
+using Microsoft.Extensions.Configuration;
+using Tynamix.ObjectFiller;
+using WireMock.Server;
+
+namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Acceptance
+{
+    public partial class DdsStu3ProviderTests
+    {
+        private readonly IDdsStu3Provider ddsStu3Provider;
+        private readonly DdsConfigurations ddsConfigurations;
+        private readonly WireMockServer wireMockServer;
+        private readonly IConfiguration configuration;
+
+        public DdsStu3ProviderTests()
+        {
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
+
+            configuration = configurationBuilder.Build();
+            this.wireMockServer = WireMockServer.Start();
+
+            this.ddsConfigurations = configuration
+                .GetSection("DdsConfigurations").Get<DdsConfigurations>();
+
+            ddsConfigurations.BaseUrl = wireMockServer.Url;
+            ddsConfigurations.AuthorisationUrl = $"{wireMockServer.Url}/authenticate";
+
+            this.ddsStu3Provider = new DdsStu3Provider(ddsConfigurations);
+        }
+
+        private static string GetRandomString() =>
+            new MnemonicString().GetValue();
+
+        private static Patient CreateRandomPatient()
+        {
+            var patient = new Patient();
+
+            HumanName humanName = new HumanName
+            {
+                ElementId = GetRandomString(),
+                Family = GetRandomString(),
+                Given = new List<string> { GetRandomString() },
+                Prefix = new List<string> { "Mr" },
+                Use = HumanName.NameUse.Usual
+            };
+
+            patient.Name = new List<HumanName> { humanName };
+            patient.Gender = AdministrativeGender.Male;
+            patient.BirthDate = GetRandomString();
+
+            return patient;
+        }
+
+        private Bundle CreateRandomBundle()
+        {
+            var bundle = new Bundle
+            {
+                Type = Bundle.BundleType.Searchset,
+                Total = 1,
+                Timestamp = DateTimeOffset.UtcNow
+            };
+
+            Patient patient = CreateRandomPatient();
+
+            bundle.Entry = new List<Bundle.EntryComponent> {
+                new Bundle.EntryComponent
+                {
+                    FullUrl = $"https://api.service.nhs.uk/personal-demographics/FHIR/STU3/Patient/{patient.Id}",
+                    Search = new Bundle.SearchComponent { Score = 1 },
+                    Resource = patient
+                }
+            };
+
+            bundle.Meta = new Meta
+            {
+                LastUpdated = DateTimeOffset.UtcNow,
+                Source = GetRandomString()
+            };
+
+            return bundle;
+        }
+
+        private object CreateExpectedAuthenticateResponse()
+        {
+            return new
+            {
+                accessToken = GetRandomString(),
+                expiresIn = 60
+            };
+        }
+
+        private string GetRequestBody(string nhsNumber)
+        {
+            var parameters = new object[] {
+                new
+                {
+                    name = "patientNHSNumber",
+                    valueIdentifier = new
+                    {
+                        system = "https://fhir.nhs.uk/Id/nhs-number",
+                        value = nhsNumber
+                    }
+                },
+                new {
+                    name = "demographicsOnly",
+                    part = new object[]
+                        {
+                        new
+                        {
+                            name = "includeDemographicsOnly",
+                            valueBoolean = false
+                        }
+                    }
+                },
+                new {
+                    name = "includeInactivePatients",
+                    part = new object[]
+                        {
+                        new
+                        {
+                            name = "includeInactivePatients",
+                            valueBoolean = false
+                        }
+                    }
+                }
+            };
+
+            var requestBody = new
+            {
+                meta = new
+                {
+                    profile = new string[] {
+                        "https://fhir.hl7.org.uk/STU3/OperationDefinition/CareConnect-GetStructuredRecord-Operation-1"
+                    }
+                },
+                resourceType = "Parameters",
+                parameter = parameters
+            };
+
+            string jsonContent = JsonSerializer.Serialize(requestBody);
+
+            return jsonContent;
+        }
+    }
+}
