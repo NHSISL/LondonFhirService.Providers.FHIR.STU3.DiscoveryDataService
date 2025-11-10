@@ -10,6 +10,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 {
     public interface IDdsHttpBroker
     {
-        ValueTask<Bundle> GetStructuredPatientAsync(string requestBody, CancellationToken cancellationToken);
+        ValueTask<Bundle> GetStructuredPatientAsync(string requestBody, CancellationToken cancellationToken = default);
     }
 }

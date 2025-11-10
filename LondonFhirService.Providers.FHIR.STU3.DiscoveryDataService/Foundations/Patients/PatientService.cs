@@ -37,7 +37,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
         });
 
-        public ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken) =>
+        public ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken = default) =>
         TryCatch(async () =>
         {
             ValidateArgsOnEverything(id);

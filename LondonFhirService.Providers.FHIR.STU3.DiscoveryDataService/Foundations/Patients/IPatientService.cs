@@ -17,6 +17,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             bool includeInactivePatients = false,
             CancellationToken cancellationToken = default);
 
-        ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken);
+        ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken = default);
     }
 }

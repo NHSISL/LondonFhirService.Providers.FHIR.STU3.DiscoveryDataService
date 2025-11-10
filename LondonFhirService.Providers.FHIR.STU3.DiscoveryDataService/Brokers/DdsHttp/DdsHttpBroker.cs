@@ -34,7 +34,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 
         public async ValueTask<Bundle> GetStructuredPatientAsync(
             string requestBody,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             using var content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
 
