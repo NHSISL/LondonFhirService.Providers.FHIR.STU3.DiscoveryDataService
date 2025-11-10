@@ -49,7 +49,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
 
             // when
             ValueTask<Bundle> getStructuredPatientAsyncAction =
-                mockedPatientService.GetStructuredPatientAsync(inputNhsNumber, inputDateOfBirth, false, false);
+                mockedPatientService.GetStructuredPatientAsync(inputNhsNumber, default, inputDateOfBirth, false, false);
 
             PatientServiceException actualException =
                 await Assert.ThrowsAsync<PatientServiceException>(getStructuredPatientAsyncAction.AsTask);

@@ -4,6 +4,7 @@
 
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp;
@@ -19,6 +20,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 
         public ValueTask<Bundle> GetStructuredPatientAsync(
             string nhsNumber,
+            CancellationToken cancellationToken,
             string dateOfBirth = "",
             bool demographicsOnly = false,
             bool includeInactivePatients = false) =>
@@ -32,17 +34,17 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                 demographicsOnly,
                 includeInactivePatients);
 
-            return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody);
+            return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
         });
 
-        public ValueTask<Bundle> EverythingAsync(string id) =>
+        public ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken) =>
         TryCatch(async () =>
         {
             ValidateArgsOnEverything(id);
 
             string requestBody = CreateRequestBody(id);
 
-            return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody);
+            return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
         });
 
         virtual internal string CreateRequestBody(

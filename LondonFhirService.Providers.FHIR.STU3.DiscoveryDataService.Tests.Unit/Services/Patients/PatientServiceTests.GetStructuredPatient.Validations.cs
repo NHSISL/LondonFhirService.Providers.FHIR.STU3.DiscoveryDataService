@@ -34,7 +34,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
 
             // when
             ValueTask<Bundle> getStructuredPatientAsyncAction =
-                patientService.GetStructuredPatientAsync(invalidText);
+                patientService.GetStructuredPatientAsync(invalidText, default);
 
             PatientValidationException actualException =
                 await Assert.ThrowsAsync<PatientValidationException>(getStructuredPatientAsyncAction.AsTask);
