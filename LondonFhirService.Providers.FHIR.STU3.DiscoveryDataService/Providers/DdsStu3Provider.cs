@@ -25,11 +25,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
         }
 
         public override string Source => this.source;
-
         public override string Code => this.code;
-
         public override string System => this.system;
-
         public override IPatientResource Patients => this.patientResource;
     }
 }

@@ -40,14 +40,16 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             };
 
             patientServiceMock.Setup(service =>
-                service.CreateRequestBody(inputNhsNumber, string.Empty, false, false))
+                service.CreateRequestBody(inputNhsNumber, It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
                     .Throws(serviceException);
 
             PatientService mockedPatientService = patientServiceMock.Object;
 
             // when
             ValueTask<Bundle> everythingAsyncAction =
-                mockedPatientService.EverythingAsync(inputNhsNumber, default);
+                mockedPatientService.EverythingAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
 
             PatientServiceException actualException =
                 await Assert.ThrowsAsync<PatientServiceException>(everythingAsyncAction.AsTask);
@@ -58,9 +60,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             patientServiceMock.Verify(service =>
                 service.CreateRequestBody(
                     inputNhsNumber,
-                    string.Empty,
-                    false,
-                    false),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()),
                         Times.Once);
 
             patientServiceMock.VerifyNoOtherCalls();

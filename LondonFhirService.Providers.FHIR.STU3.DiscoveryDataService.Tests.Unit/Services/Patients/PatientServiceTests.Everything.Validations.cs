@@ -34,7 +34,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
 
             // when
             ValueTask<Bundle> getEverythingAsyncAction =
-                patientService.EverythingAsync(invalidText, default);
+                patientService.EverythingAsync(
+                    id: invalidText,
+                    cancellationToken: default);
 
             PatientValidationException actualException =
                 await Assert.ThrowsAsync<PatientValidationException>(getEverythingAsyncAction.AsTask);
