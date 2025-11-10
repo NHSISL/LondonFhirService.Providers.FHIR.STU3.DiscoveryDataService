@@ -40,7 +40,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 
             await EnsureClientAsync(cancellationToken);
 
-
             //TODO : Add cancellation token support to RESTFulApiFactoryClient
             return await apiClient!.PostContentAsync<StringContent, Bundle>(
                 $"{ddsConfigurations.BaseUrl}/patient/$get-structured-record",
