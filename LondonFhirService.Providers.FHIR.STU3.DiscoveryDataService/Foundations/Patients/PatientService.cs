@@ -41,7 +41,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
         TryCatch(async () =>
         {
             ValidateArgsOnEverything(id);
-
             string requestBody = CreateRequestBody(id);
 
             return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
