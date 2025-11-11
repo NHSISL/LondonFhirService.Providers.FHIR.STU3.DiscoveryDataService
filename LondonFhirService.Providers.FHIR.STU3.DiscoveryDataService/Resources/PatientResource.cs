@@ -45,5 +45,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
                     demographicsOnly ?? false,
                     includeInactivePatients ?? false,
                     cancellationToken);
+
+        public ValueTask<Bundle> Match(Parameters parameters, CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
     }
 }

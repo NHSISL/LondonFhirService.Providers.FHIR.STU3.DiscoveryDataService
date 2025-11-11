@@ -20,6 +20,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
 
         public DdsStu3Provider(DdsConfigurations configurations)
         {
+            this.configurations = configurations;
             IServiceProvider serviceProvider = RegisterServices(configurations);
             InitializeClients(serviceProvider);
         }
