@@ -15,9 +15,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
 {
     public sealed class DdsStu3Provider : FhirProviderBase, IFhirProvider
     {
-        private readonly string source;
-        private readonly string code;
-        private readonly string system;
+        private readonly DdsConfigurations configurations;
         private IPatientResource patientResource { get; set; }
 
         public DdsStu3Provider(DdsConfigurations configurations)
@@ -26,9 +24,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
             InitializeClients(serviceProvider);
         }
 
-        public override string Source => this.source;
-        public override string Code => this.code;
-        public override string System => this.system;
+        public override string Source => this.configurations.Source;
+        public override string Code => this.configurations.Code;
+        public override string System => this.configurations.System;
         public override IPatientResource Patients => this.patientResource;
 
         private void InitializeClients(IServiceProvider serviceProvider) =>
