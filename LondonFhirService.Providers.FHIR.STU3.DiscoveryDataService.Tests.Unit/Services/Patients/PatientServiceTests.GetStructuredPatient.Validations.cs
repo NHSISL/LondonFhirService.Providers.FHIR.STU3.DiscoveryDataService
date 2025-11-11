@@ -34,14 +34,18 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
 
             // when
             ValueTask<Bundle> getStructuredPatientAsyncAction =
-                patientService.GetStructuredPatientAsync(invalidText);
+                patientService.GetStructuredPatientAsync(
+                    nhsNumber: invalidText,
+                    dateOfBirth: string.Empty,
+                    demographicsOnly: false,
+                    includeInactivePatients: false,
+                    cancellationToken: default);
 
             PatientValidationException actualException =
                 await Assert.ThrowsAsync<PatientValidationException>(getStructuredPatientAsyncAction.AsTask);
 
             // then
             actualException.Should().BeEquivalentTo(expectedPatientValidationException);
-
             this.ddsHttpBrokerMock.VerifyNoOtherCalls();
         }
     }

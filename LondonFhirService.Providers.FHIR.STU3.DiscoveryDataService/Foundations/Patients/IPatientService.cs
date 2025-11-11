@@ -2,6 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------
 
+using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 
@@ -13,8 +14,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             string nhsNumber,
             string dateOfBirth = "",
             bool demographicsOnly = false,
-            bool includeInactivePatients = false);
+            bool includeInactivePatients = false,
+            CancellationToken cancellationToken = default);
 
-        ValueTask<Bundle> EverythingAsync(string id);
+        ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken = default);
     }
 }

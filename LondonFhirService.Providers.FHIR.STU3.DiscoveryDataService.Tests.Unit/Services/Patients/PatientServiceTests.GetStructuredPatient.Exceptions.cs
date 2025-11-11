@@ -22,8 +22,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             var serviceException = new Exception(GetRandomString());
             string randomNhsNumber = GetRandomString();
             string inputNhsNumber = randomNhsNumber;
-            string randomDateOfBirth = GetRandomString();
-            string inputDateOfBirth = randomDateOfBirth;
 
             var failedServicePatientException =
                 new FailedPatientServiceException(
@@ -42,14 +40,19 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             };
 
             patientServiceMock.Setup(service =>
-                service.CreateRequestBody(inputNhsNumber, inputDateOfBirth, false, false))
+                service.CreateRequestBody(inputNhsNumber, It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
                     .Throws(serviceException);
 
             PatientService mockedPatientService = patientServiceMock.Object;
 
             // when
             ValueTask<Bundle> getStructuredPatientAsyncAction =
-                mockedPatientService.GetStructuredPatientAsync(inputNhsNumber, inputDateOfBirth, false, false);
+                mockedPatientService.GetStructuredPatientAsync(
+                    nhsNumber: inputNhsNumber,
+                    dateOfBirth: string.Empty,
+                    demographicsOnly: false,
+                    includeInactivePatients: false,
+                    cancellationToken: default);
 
             PatientServiceException actualException =
                 await Assert.ThrowsAsync<PatientServiceException>(getStructuredPatientAsyncAction.AsTask);
@@ -60,9 +63,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             patientServiceMock.Verify(service =>
                 service.CreateRequestBody(
                     inputNhsNumber,
-                    inputDateOfBirth,
-                    false,
-                    false),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()),
                         Times.Once);
 
             patientServiceMock.VerifyNoOtherCalls();

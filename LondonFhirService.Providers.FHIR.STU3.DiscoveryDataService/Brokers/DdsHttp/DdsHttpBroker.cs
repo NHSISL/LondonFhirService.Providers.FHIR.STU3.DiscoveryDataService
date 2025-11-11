@@ -17,7 +17,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 {
     public class DdsHttpBroker : IDdsHttpBroker
     {
-        private readonly DdsHttpConfigurations ddsHttpConfigurations;
+        private readonly DdsConfigurations ddsConfigurations;
         private readonly IHttpClientFactory httpClientFactory;
         private readonly SemaphoreSlim setupGate = new(1, 1);
         private IRESTFulApiFactoryClient? apiClient = null;
@@ -25,25 +25,28 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
         private DateTimeOffset tokenExpiry = DateTimeOffset.MinValue;
 
         public DdsHttpBroker(
-            DdsHttpConfigurations ddsHttpConfigurations,
+            DdsConfigurations ddsHttpConfigurations,
             IHttpClientFactory httpClientFactory)
         {
-            this.ddsHttpConfigurations = ddsHttpConfigurations;
+            this.ddsConfigurations = ddsHttpConfigurations;
             this.httpClientFactory = httpClientFactory;
         }
 
-        public async ValueTask<Bundle> GetStructuredPatientAsync(string requestBody)
+        public async ValueTask<Bundle> GetStructuredPatientAsync(
+            string requestBody,
+            CancellationToken cancellationToken = default)
         {
             using var content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
 
-            await EnsureClientAsync();
+            await EnsureClientAsync(cancellationToken);
 
+            //TODO : Add cancellation token support to RESTFulApiFactoryClient
             return await apiClient!.PostContentAsync<StringContent, Bundle>(
-                $"{ddsHttpConfigurations.BaseUrl}/patient/$get-structured-record",
+                $"{ddsConfigurations.BaseUrl}/patient/$get-structured-record",
                 content);
         }
 
-        private async Task EnsureClientAsync()
+        private async Task EnsureClientAsync(CancellationToken cancellationToken)
         {
             if (apiClient is not null && DateTimeOffset.UtcNow < tokenExpiry)
             {
@@ -56,7 +59,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             {
                 if (apiClient is null || DateTimeOffset.UtcNow >= tokenExpiry)
                 {
-                    await SetupApiClientAsync().ConfigureAwait(false);
+                    await SetupApiClientAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
             finally
@@ -65,22 +68,22 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             }
         }
 
-        private async ValueTask GetAccessTokenAsync()
+        private async ValueTask GetAccessTokenAsync(CancellationToken cancellationToken)
         {
             var httpClient = httpClientFactory.CreateClient("TokenClient");
 
             var requestBody = new
             {
                 grantType = "client_credentials",
-                clientId = ddsHttpConfigurations.ClientId,
-                clientSecret = ddsHttpConfigurations.ClientSecret
+                clientId = ddsConfigurations.ClientId,
+                clientSecret = ddsConfigurations.ClientSecret
             };
 
             string jsonContent = JsonSerializer.Serialize(requestBody);
             using var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync(ddsHttpConfigurations.AuthorisationUrl, content);
+            var response = await httpClient.PostAsync(ddsConfigurations.AuthorisationUrl, content, cancellationToken);
             response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             using var doc = JsonDocument.Parse(json);
 
             this.accessToken = doc.RootElement.GetProperty("access_token").GetString()
@@ -96,9 +99,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             this.tokenExpiry = DateTimeOffset.UtcNow.AddSeconds(expiresIn - 30);
         }
 
-        private async Task SetupApiClientAsync()
+        private async Task SetupApiClientAsync(CancellationToken cancellationToken)
         {
-            await GetAccessTokenAsync().ConfigureAwait(false);
+            await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
             HttpClient httpClient = httpClientFactory.CreateClient("ApiClient");
             httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/fhir+json");
 
