@@ -52,7 +52,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                 dateOfBirth: inputDateOfBirth,
                 demographicsOnly: false,
                 includeInactivePatients: false,
-                cancellationToken: default);
+                cancellationToken: inputCancellationToken);
 
             // then
             actualBundle.Should().BeEquivalentTo(expectedBundle);
