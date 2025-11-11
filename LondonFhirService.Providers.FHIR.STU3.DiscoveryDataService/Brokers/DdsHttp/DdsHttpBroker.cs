@@ -83,7 +83,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             using var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
             var response = await httpClient.PostAsync(ddsConfigurations.AuthorisationUrl, content, cancellationToken);
             response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             using var doc = JsonDocument.Parse(json);
 
             this.accessToken = doc.RootElement.GetProperty("access_token").GetString()
