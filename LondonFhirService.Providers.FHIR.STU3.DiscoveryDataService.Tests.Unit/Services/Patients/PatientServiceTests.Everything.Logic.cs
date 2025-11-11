@@ -48,7 +48,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             Bundle actualBundle =
                 await mockedPatientService.EverythingAsync(
                     id: inputId,
-                    cancellationToken: default);
+                    cancellationToken: inputCancellationToken);
 
             // then
             actualBundle.Should().BeEquivalentTo(expectedBundle);
