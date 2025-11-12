@@ -42,7 +42,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 
             //TODO : Add cancellation token support to RESTFulApiFactoryClient
             return await apiClient!.PostContentAsync<StringContent, Bundle>(
-                $"{ddsConfigurations.BaseUrl}/patient/$get-structured-record",
+                $"{ddsConfigurations.BaseUrl}/patient/$getstructuredrecord",
                 content);
         }
 
@@ -89,9 +89,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             this.accessToken = doc.RootElement.GetProperty("access_token").GetString()
                 ?? throw new InvalidOperationException("Access token is null");
 
-            var expiresInString = doc.RootElement.GetProperty("expires_in").GetString();
+            var expiresInHasIntValue = doc.RootElement.GetProperty("expires_in").TryGetInt32(out var expiresIn);
 
-            if (expiresInString is null || !int.TryParse(expiresInString, out var expiresIn))
+            if (!expiresInHasIntValue)
             {
                 throw new InvalidOperationException("Invalid expires_in value");
             }

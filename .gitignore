@@ -403,3 +403,4 @@ FodyWeavers.xsd
 /ISL.NecsApi.Tests.Integrations/appsettings.Development.json
 /ISL.Providers.ReIdentification.Necs.Tests.Acceptance/appsettings.Development.json
 /ISL.Providers.PDS.FHIR.Tests.Acceptance/appsettings.Development.json
+/LondonFhirService.Providers.FHIR.STU3.DDS.Integration/appsettings.Development.json
