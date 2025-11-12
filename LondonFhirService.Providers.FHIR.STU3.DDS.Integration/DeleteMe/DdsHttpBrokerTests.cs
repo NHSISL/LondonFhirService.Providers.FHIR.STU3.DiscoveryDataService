@@ -10,7 +10,7 @@ using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace LondonFhirService.Providers.FHIR.STU3.DDS.Integration
+namespace LondonFhirService.Providers.FHIR.STU3.DDS.Integration.DeleteMe
 {
     public class DdsHttpBrokerTests
     {
@@ -80,7 +80,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DDS.Integration
             var serviceCollection = new ServiceCollection()
                 .AddSingleton(ddsConfigurations);
 
-            HttpClientFactoryServiceCollectionExtensions.AddHttpClient(serviceCollection);
+            serviceCollection.AddHttpClient();
             IServiceProvider serviceProvider = serviceCollection.BuildServiceProvider();
             var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
