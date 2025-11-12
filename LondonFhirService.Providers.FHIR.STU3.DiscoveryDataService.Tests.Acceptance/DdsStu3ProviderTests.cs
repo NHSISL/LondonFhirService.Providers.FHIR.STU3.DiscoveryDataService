@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
 using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers;
@@ -14,7 +13,7 @@ using WireMock.Server;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Acceptance
 {
-    public partial class DdsStu3ProviderTests
+    public partial class DdsStu3ProviderTests : IDisposable
     {
         private readonly IDdsStu3Provider ddsStu3Provider;
         private readonly DdsConfigurations ddsConfigurations;
@@ -38,6 +37,12 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
             ddsConfigurations.AuthorisationUrl = $"{wireMockServer.Url}/authenticate";
 
             this.ddsStu3Provider = new DdsStu3Provider(ddsConfigurations);
+        }
+
+        public void Dispose()
+        {
+            this.wireMockServer?.Stop();
+            this.wireMockServer?.Dispose();
         }
 
         private static DateTimeOffset GetRandomDateTimeOffset() =>
