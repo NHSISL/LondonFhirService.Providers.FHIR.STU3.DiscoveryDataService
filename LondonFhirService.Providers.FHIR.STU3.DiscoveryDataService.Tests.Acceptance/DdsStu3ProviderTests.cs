@@ -40,6 +40,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
             this.ddsStu3Provider = new DdsStu3Provider(ddsConfigurations);
         }
 
+        private static DateTimeOffset GetRandomDateTimeOffset() =>
+            new DateTimeRange(earliestDate: new DateTime()).GetValue();
+
         private static string GetRandomString() =>
             new MnemonicString().GetValue();
 
@@ -58,7 +61,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
 
             patient.Name = new List<HumanName> { humanName };
             patient.Gender = AdministrativeGender.Male;
-            patient.BirthDate = GetRandomString();
+            patient.BirthDate = GetRandomDateTimeOffset().ToString("yyyy-MM-dd");
 
             return patient;
         }
@@ -68,16 +71,17 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
             var bundle = new Bundle
             {
                 Type = Bundle.BundleType.Searchset,
-                Total = 1,
-                Timestamp = DateTimeOffset.UtcNow
+                Total = 1
             };
 
             Patient patient = CreateRandomPatient();
 
-            bundle.Entry = new List<Bundle.EntryComponent> {
+            bundle.Entry = new List<Bundle.EntryComponent>
+            {
                 new Bundle.EntryComponent
                 {
-                    FullUrl = $"https://api.service.nhs.uk/personal-demographics/FHIR/STU3/Patient/{patient.Id}",
+                    FullUrl =
+                        $"https://api.service.nhs.uk/personal-demographics/FHIR/STU3/Patient/{patient.Id}",
                     Search = new Bundle.SearchComponent { Score = 1 },
                     Resource = patient
                 }
@@ -85,73 +89,10 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
 
             bundle.Meta = new Meta
             {
-                LastUpdated = DateTimeOffset.UtcNow,
-                Source = GetRandomString()
+                LastUpdated = DateTimeOffset.UtcNow
             };
 
             return bundle;
-        }
-
-        private object CreateExpectedAuthenticateResponse()
-        {
-            return new
-            {
-                accessToken = GetRandomString(),
-                expiresIn = 60
-            };
-        }
-
-        private string GetRequestBody(string nhsNumber)
-        {
-            var parameters = new object[] {
-                new
-                {
-                    name = "patientNHSNumber",
-                    valueIdentifier = new
-                    {
-                        system = "https://fhir.nhs.uk/Id/nhs-number",
-                        value = nhsNumber
-                    }
-                },
-                new {
-                    name = "demographicsOnly",
-                    part = new object[]
-                        {
-                        new
-                        {
-                            name = "includeDemographicsOnly",
-                            valueBoolean = false
-                        }
-                    }
-                },
-                new {
-                    name = "includeInactivePatients",
-                    part = new object[]
-                        {
-                        new
-                        {
-                            name = "includeInactivePatients",
-                            valueBoolean = false
-                        }
-                    }
-                }
-            };
-
-            var requestBody = new
-            {
-                meta = new
-                {
-                    profile = new string[] {
-                        "https://fhir.hl7.org.uk/STU3/OperationDefinition/CareConnect-GetStructuredRecord-Operation-1"
-                    }
-                },
-                resourceType = "Parameters",
-                parameter = parameters
-            };
-
-            string jsonContent = JsonSerializer.Serialize(requestBody);
-
-            return jsonContent;
         }
     }
 }
