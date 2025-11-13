@@ -9,7 +9,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DDS.Integration
     public partial class DdsStu3ProviderTests
     {
         [Fact]
-        public async Task ShouldPatientLookupByDetailsAsync()
+        public async Task ShouldGetStructuredRecordAsync()
         {
             // given
             string inputNhsNumber = "5558526785";
