@@ -4,86 +4,105 @@
 
 using System;
 using System.Net.Http;
-using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
-using RESTFulSense.Clients;
-using Task = System.Threading.Tasks.Task;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp
 {
-    public class DdsHttpBroker : IDdsHttpBroker
+    public class DdsHttpBroker : IDdsHttpBroker, IDisposable
     {
         private readonly DdsConfigurations ddsConfigurations;
-        private readonly IHttpClientFactory httpClientFactory;
-        private readonly SemaphoreSlim setupGate = new(1, 1);
-        private IRESTFulApiFactoryClient? apiClient = null;
-        private HttpClient? httpClient = null;
+        private readonly HttpClient tokenHttp;
+        private readonly HttpClient apiHttp;
+        private readonly SemaphoreSlim tokenGate = new(1, 1);
+        private readonly FhirJsonDeserializer fhirJsonDeserializer = new();
+
         private string accessToken = string.Empty;
         private DateTimeOffset tokenExpiry = DateTimeOffset.MinValue;
+        private bool disposed;
 
-        public DdsHttpBroker(
-            DdsConfigurations ddsHttpConfigurations,
-            IHttpClientFactory httpClientFactory)
+        public DdsHttpBroker(DdsConfigurations ddsConfigurations)
         {
-            this.ddsConfigurations = ddsHttpConfigurations;
-            this.httpClientFactory = httpClientFactory;
+            this.ddsConfigurations =
+                ddsConfigurations ?? throw new ArgumentNullException(nameof(ddsConfigurations));
+
+            this.tokenHttp = new HttpClient();
+            this.apiHttp = new HttpClient();
+
+            if (!string.IsNullOrWhiteSpace(ddsConfigurations.BaseUrl))
+            {
+                this.apiHttp.BaseAddress = new Uri(ddsConfigurations.BaseUrl, UriKind.Absolute);
+            }
+
+            this.apiHttp.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/fhir+json");
         }
 
         public async ValueTask<Bundle> GetStructuredPatientAsync(
             string requestBody,
             CancellationToken cancellationToken = default)
         {
-            using var content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
+            await EnsureAccessTokenAsync(cancellationToken).ConfigureAwait(false);
 
-            await EnsureClientAsync(cancellationToken);
+            using var content = new StringContent(
+                requestBody,
+                Encoding.UTF8,
+                "application/json");
 
-            HttpResponseMessage response =
-                await httpClient!.PostAsync(
-                    $"{ddsConfigurations.BaseUrl}/patient/$get-structured-record",
-                    content,
-                    cancellationToken);
+            using var response = await this.apiHttp
+                .PostAsync("fhirTestAPI/patient/$getstructuredrecord", content, cancellationToken)
+                .ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
 
-            string responseContent =
-                await response.Content.ReadAsStringAsync(cancellationToken);
+            string json = await response
+                .Content
+                .ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
 
-            var fhirJsonDeserializer = new FhirJsonDeserializer();
-
-            return fhirJsonDeserializer.Deserialize<Bundle>(responseContent);
+            return this.fhirJsonDeserializer.Deserialize<Bundle>(json);
         }
 
-        private async Task EnsureClientAsync(CancellationToken cancellationToken)
+        private async ValueTask EnsureAccessTokenAsync(CancellationToken cancellationToken)
         {
-            if (apiClient is not null && DateTimeOffset.UtcNow < tokenExpiry)
+            if (!string.IsNullOrEmpty(this.accessToken)
+                && DateTimeOffset.UtcNow < this.tokenExpiry)
             {
                 return;
             }
 
-            await setupGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await this.tokenGate.WaitAsync(cancellationToken).ConfigureAwait(false);
 
             try
             {
-                if (apiClient is null || DateTimeOffset.UtcNow >= tokenExpiry)
+                if (string.IsNullOrEmpty(this.accessToken)
+                    || DateTimeOffset.UtcNow >= this.tokenExpiry)
                 {
-                    await SetupApiClientAsync(cancellationToken).ConfigureAwait(false);
+                    await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+                    this.apiHttp.DefaultRequestHeaders.Clear();
+
+                    this.apiHttp.DefaultRequestHeaders.Accept.Add(
+                        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/fhir+json"));
+
+                    this.apiHttp.DefaultRequestHeaders.Accept.Add(
+                        new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    this.apiHttp.DefaultRequestHeaders.Remove("Authorization");
+                    this.apiHttp.DefaultRequestHeaders.Add("Authorization", accessToken);
                 }
             }
             finally
             {
-                setupGate.Release();
+                this.tokenGate.Release();
             }
         }
 
         private async ValueTask GetAccessTokenAsync(CancellationToken cancellationToken)
         {
-            var httpClient = httpClientFactory.CreateClient("TokenClient");
-
             var requestBody = new
             {
                 grantType = "client_credentials",
@@ -93,17 +112,24 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 
             string jsonContent = JsonSerializer.Serialize(requestBody);
             using var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync(ddsConfigurations.AuthorisationUrl, content, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            using var doc = JsonDocument.Parse(json);
 
-            this.accessToken = doc.RootElement.GetProperty("access_token").GetString()
+            var response = await this.tokenHttp
+                .PostAsync(ddsConfigurations.AuthorisationUrl, content, cancellationToken)
+                .ConfigureAwait(false);
+
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content
+                .ReadAsStringAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            this.accessToken = root.GetProperty("access_token").GetString()
                 ?? throw new InvalidOperationException("Access token is null");
 
-            var expiresInHasIntValue = doc.RootElement.GetProperty("expires_in").TryGetInt32(out var expiresIn);
-
-            if (!expiresInHasIntValue)
+            if (!root.GetProperty("expires_in").TryGetInt32(out int expiresIn))
             {
                 throw new InvalidOperationException("Invalid expires_in value");
             }
@@ -111,18 +137,17 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             this.tokenExpiry = DateTimeOffset.UtcNow.AddSeconds(expiresIn - 30);
         }
 
-        private async Task SetupApiClientAsync(CancellationToken cancellationToken)
+        public void Dispose()
         {
-            await GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
-            this.httpClient = httpClientFactory.CreateClient("ApiClient");
-            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/fhir+json");
+            if (this.disposed)
+            {
+                return;
+            }
 
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue(
-                    scheme: "Bearer",
-                    parameter: this.accessToken);
-
-            this.apiClient = new RESTFulApiFactoryClient(httpClient);
+            this.disposed = true;
+            this.tokenGate.Dispose();
+            this.tokenHttp.Dispose();
+            this.apiHttp.Dispose();
         }
     }
 }

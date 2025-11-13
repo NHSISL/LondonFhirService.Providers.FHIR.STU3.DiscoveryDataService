@@ -12,7 +12,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DDS.Integration
         public async Task ShouldGetStructuredRecordAsync()
         {
             // given
-            string inputNhsNumber = "5558526785";
+            string inputNhsNumber = "9435797881";
 
             // when
             await this.ddsStu3Provider.Patients.GetStructuredRecord(nhsNumber: inputNhsNumber);
