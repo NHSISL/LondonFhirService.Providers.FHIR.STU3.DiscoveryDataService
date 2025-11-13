@@ -396,11 +396,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/ISL.Providers.Notifications.Abstractions.Tests.Acceptance/appsettings.Development.json
-/ISL.Providers.Notifications.GovukNotify.Tests.Acceptance/appsettings.Development.json
-/ISL.Providers.ReIdentification.Abstractions.Tests.Acceptance/appsettings.Development.json
-/ISL.Providers.ReIdentification.Necs.Tests.Integrations/appsettings.Development.json
-/ISL.NecsApi.Tests.Integrations/appsettings.Development.json
-/ISL.Providers.ReIdentification.Necs.Tests.Acceptance/appsettings.Development.json
-/ISL.Providers.PDS.FHIR.Tests.Acceptance/appsettings.Development.json
-/LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Acceptance/appsettings.Development.json
+**/appsettings.Development.json
+ 

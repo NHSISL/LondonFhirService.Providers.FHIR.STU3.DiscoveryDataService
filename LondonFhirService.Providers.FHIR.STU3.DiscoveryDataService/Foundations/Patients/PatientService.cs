@@ -58,7 +58,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                     name = "patientNHSNumber",
                     valueIdentifier = new
                     {
-                        system = "https://fhir.nhs.uk/Id/nhs-number",
+                        system = "https://fhir.hl7.org.uk/Id/nhs-number",
                         value = nhsNumber
                     }
                 },

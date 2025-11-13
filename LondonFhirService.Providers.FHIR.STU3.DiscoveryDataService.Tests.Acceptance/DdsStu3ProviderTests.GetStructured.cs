@@ -36,7 +36,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
             {
                 access_token = randomAccessToken,
                 token_type = "Bearer",
-                expires_in = "60"
+                expires_in = 60
             };
 
             var fhirJsonSerializer = new FhirJsonSerializer();
@@ -48,7 +48,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
                 .Given(
                     Request
                         .Create()
-                        .WithPath("/authenticate")
+                        .WithPath("/authenticate/$gettoken")
                         .WithBodyAsJson(authenticateRequestBody)
                         .UsingPost())
 
@@ -63,7 +63,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
                 .Given(
                     Request
                         .Create()
-                        .WithPath("/patient/$get-structured-record")
+                        .WithPath("/fhirTestAPI/patient/$getstructuredrecord")
                         .UsingPost())
 
                 .RespondWith(

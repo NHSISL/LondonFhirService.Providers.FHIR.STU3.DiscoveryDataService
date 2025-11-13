@@ -34,7 +34,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
                 .GetSection("DdsConfigurations").Get<DdsConfigurations>();
 
             ddsConfigurations.BaseUrl = wireMockServer.Url;
-            ddsConfigurations.AuthorisationUrl = $"{wireMockServer.Url}/authenticate";
+            ddsConfigurations.AuthorisationUrl = $"{wireMockServer.Url}/authenticate/$gettoken";
 
             this.ddsStu3Provider = new DdsStu3Provider(ddsConfigurations);
         }
