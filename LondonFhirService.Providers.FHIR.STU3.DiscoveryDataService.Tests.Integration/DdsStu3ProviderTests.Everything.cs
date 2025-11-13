@@ -4,7 +4,7 @@
 
 using System.Threading.Tasks;
 
-namespace LondonFhirService.Providers.FHIR.STU3.DDS.Integration
+namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integration
 {
     public partial class DdsStu3ProviderTests
     {

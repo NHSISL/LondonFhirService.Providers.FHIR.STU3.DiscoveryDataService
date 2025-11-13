@@ -405,3 +405,4 @@ FodyWeavers.xsd
 /ISL.Providers.PDS.FHIR.Tests.Acceptance/appsettings.Development.json
 /LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Acceptance/appsettings.Development.json
 /LondonFhirService.Providers.FHIR.STU3.DDS.Integration/appsettings.Development.json
+/LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Acceptance/appsettings.Development.json
