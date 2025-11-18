@@ -50,7 +50,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Hl7.Fhir.STU3" Version="6.0.1" />
-	  <PackageReference Include="LondonFhirService.Providers.FHIR.STU3.Abstractions" Version="0.3.0" />
+	  <PackageReference Include="LondonFhirService.Providers.FHIR.STU3.Abstractions" Version="0.4.0" />
 	  <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.0" />
 	  <PackageReference Include="RESTFulSense" Version="3.2.0" />
 	  <PackageReference Include="Xeption" Version="2.8.0" />
