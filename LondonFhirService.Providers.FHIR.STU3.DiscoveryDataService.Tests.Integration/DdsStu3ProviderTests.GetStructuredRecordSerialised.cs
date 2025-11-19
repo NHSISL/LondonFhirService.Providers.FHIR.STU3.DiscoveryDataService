@@ -10,13 +10,13 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integ
     public partial class DdsStu3ProviderTests
     {
         [Fact]
-        public async Task ShouldEverythingAsync()
+        public async Task ShouldGetStructuredRecordSerialisedAsync()
         {
             // given
-            string inputId = "9435797881";
+            string inputNhsNumber = "9435797881";
 
             // when
-            await this.ddsStu3Provider.Patients.EverythingAsync(id: inputId);
+            await this.ddsStu3Provider.Patients.GetStructuredRecordSerialisedAsync(nhsNumber: inputNhsNumber);
         }
     }
 }

@@ -33,7 +33,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     innerException: invalidArgumentPatientServiceException);
 
             // when
-            ValueTask<Bundle> getStructuredPatientAsyncAction =
+            ValueTask<Bundle> getStructuredPatientTask =
                 patientService.GetStructuredPatientAsync(
                     nhsNumber: invalidText,
                     dateOfBirth: string.Empty,
@@ -42,7 +42,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     cancellationToken: default);
 
             PatientValidationException actualException =
-                await Assert.ThrowsAsync<PatientValidationException>(getStructuredPatientAsyncAction.AsTask);
+                await Assert.ThrowsAsync<PatientValidationException>(getStructuredPatientTask.AsTask);
 
             // then
             actualException.Should().BeEquivalentTo(expectedPatientValidationException);

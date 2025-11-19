@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
@@ -14,6 +15,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
     public partial class PatientService : IPatientService
     {
         private readonly IDdsHttpBroker ddsHttpBroker;
+        private readonly FhirJsonDeserializer fhirJsonDeserializer = new();
 
         public PatientService(IDdsHttpBroker ddsHttpBroker) =>
             this.ddsHttpBroker = ddsHttpBroker;
@@ -34,10 +36,41 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                 demographicsOnly,
                 includeInactivePatients);
 
+            var json = await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
+
+            return this.fhirJsonDeserializer.Deserialize<Bundle>(json);
+        });
+
+        public ValueTask<string> GetStructuredRecordSerialisedAsync(
+            string nhsNumber,
+            string dateOfBirth = "",
+            bool demographicsOnly = false,
+            bool includeInactivePatients = false,
+            CancellationToken cancellationToken = default) =>
+        TryCatch(async () =>
+        {
+            ValidateArgsOnGetStructuredPatient(nhsNumber);
+
+            string requestBody = CreateRequestBody(
+                nhsNumber,
+                dateOfBirth,
+                demographicsOnly,
+                includeInactivePatients);
+
             return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
         });
 
         public ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken = default) =>
+        TryCatch(async () =>
+        {
+            ValidateArgsOnEverything(id);
+            string requestBody = CreateRequestBody(id);
+            var json = await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
+
+            return this.fhirJsonDeserializer.Deserialize<Bundle>(json);
+        });
+
+        public ValueTask<string> EverythingSerialisedAsync(string id, CancellationToken cancellationToken = default) =>
         TryCatch(async () =>
         {
             ValidateArgsOnEverything(id);

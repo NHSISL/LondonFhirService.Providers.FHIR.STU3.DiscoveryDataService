@@ -13,12 +13,35 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
     public partial class PatientService
     {
         private delegate ValueTask<Bundle> ReturningBundleFunction();
+        private delegate ValueTask<string> ReturningStringFunction();
 
         private async ValueTask<Bundle> TryCatch(ReturningBundleFunction returningBundleFunction)
         {
             try
             {
                 return await returningBundleFunction();
+            }
+            catch (InvalidArgumentPatientServiceException invalidArgumentPatientServiceException)
+            {
+                throw await CreateAndLogValidationExceptionAsync(invalidArgumentPatientServiceException);
+            }
+            catch (Exception exception)
+            {
+                var failedPatientServiceException =
+                    new FailedPatientServiceException(
+                        message: "Failed patient service error occurred, please contact support.",
+                        innerException: exception,
+                        data: exception.Data);
+
+                throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
+            }
+        }
+
+        private async ValueTask<string> TryCatch(ReturningStringFunction returningStringFunction)
+        {
+            try
+            {
+                return await returningStringFunction();
             }
             catch (InvalidArgumentPatientServiceException invalidArgumentPatientServiceException)
             {

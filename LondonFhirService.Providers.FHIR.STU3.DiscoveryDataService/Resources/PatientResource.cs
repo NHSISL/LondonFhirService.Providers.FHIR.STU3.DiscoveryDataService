@@ -22,7 +22,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
         }
 
         [FhirOperation]
-        public async ValueTask<Bundle> Everything(
+        public async ValueTask<Bundle> EverythingAsync(
             string id,
             DateTimeOffset? start = null,
             DateTimeOffset? end = null,
@@ -33,7 +33,18 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
                 await patientService.EverythingAsync(id, cancellationToken);
 
         [FhirOperation]
-        public ValueTask<Bundle> GetStructuredRecord(
+        public async ValueTask<string> EverythingSerialisedAsync(
+            string id,
+            DateTimeOffset? start = null,
+            DateTimeOffset? end = null,
+            string typeFilter = null,
+            DateTimeOffset? since = null,
+            int? count = null,
+            CancellationToken cancellationToken = default) =>
+            await patientService.EverythingSerialisedAsync(id, cancellationToken);
+
+        [FhirOperation]
+        public ValueTask<Bundle> GetStructuredRecordAsync(
             string nhsNumber,
             DateTime? dateOfBirth = null,
             bool? demographicsOnly = null,
@@ -46,7 +57,20 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
                     includeInactivePatients ?? false,
                     cancellationToken);
 
-        public ValueTask<Bundle> Match(Parameters parameters, CancellationToken cancellationToken = default) =>
+        public ValueTask<string> GetStructuredRecordSerialisedAsync(
+            string nhsNumber,
+            DateTime? dateOfBirth = null,
+            bool? demographicsOnly = null,
+            bool? includeInactivePatients = null,
+            CancellationToken cancellationToken = default) =>
+                patientService.GetStructuredRecordSerialisedAsync(
+                    nhsNumber,
+                    dateOfBirth?.ToString("yyyy-MM-dd") ?? string.Empty,
+                    demographicsOnly ?? false,
+                    includeInactivePatients ?? false,
+                    cancellationToken);
+
+        public ValueTask<Bundle> MatchAsync(Parameters parameters, CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
     }
 }

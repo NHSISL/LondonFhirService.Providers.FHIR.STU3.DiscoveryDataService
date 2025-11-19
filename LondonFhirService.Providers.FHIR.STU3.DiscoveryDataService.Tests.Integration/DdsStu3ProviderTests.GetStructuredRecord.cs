@@ -3,6 +3,7 @@
 // ---------------------------------------------------------
 
 using System.Threading.Tasks;
+using Xunit;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integration
 {
@@ -15,7 +16,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integ
             string inputNhsNumber = "9435797881";
 
             // when
-            await this.ddsStu3Provider.Patients.GetStructuredRecord(nhsNumber: inputNhsNumber);
+            await this.ddsStu3Provider.Patients.GetStructuredRecordAsync(nhsNumber: inputNhsNumber);
         }
     }
 }
