@@ -30,7 +30,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
             DateTimeOffset? since = null,
             int? count = null,
             CancellationToken cancellationToken = default) =>
-                await patientService.EverythingAsync(id, cancellationToken);
+                await patientService.EverythingAsync(id, start, end, typeFilter, since, count, cancellationToken);
 
         [FhirOperation]
         public async ValueTask<string> EverythingSerialisedAsync(
@@ -41,7 +41,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
             DateTimeOffset? since = null,
             int? count = null,
             CancellationToken cancellationToken = default) =>
-            await patientService.EverythingSerialisedAsync(id, cancellationToken);
+            await patientService.EverythingSerialisedAsync(id, start, end, typeFilter, since, count, cancellationToken);
 
         [FhirOperation]
         public ValueTask<Bundle> GetStructuredRecordAsync(
