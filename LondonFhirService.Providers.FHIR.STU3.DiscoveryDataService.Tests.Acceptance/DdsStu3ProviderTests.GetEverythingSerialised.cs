@@ -17,11 +17,11 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
     public partial class DdsStu3ProviderTests
     {
         [Fact]
-        public async Task ShouldEverythingAsync()
+        public async Task ShouldGetStructuredRecordSerialisedAsync()
         {
             // given
-            string randomId = GetRandomString();
-            string inputId = randomId;
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
             Bundle bundleResponse = CreateRandomBundle();
             Bundle expectedResponse = bundleResponse.DeepClone();
             string randomAccessToken = GetRandomString();
@@ -42,7 +42,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
 
             var fhirJsonSerializer = new FhirJsonSerializer();
 
-            string expectedBundleResponse =
+            string expectedJsonResponse =
                 fhirJsonSerializer.SerializeToString(bundleResponse);
 
             this.wireMockServer
@@ -72,15 +72,15 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
                         .Create()
                         .WithStatusCode(HttpStatusCode.OK)
                         .WithHeader("Content-Type", "application/fhir+json")
-                        .WithBody(expectedBundleResponse));
+                        .WithBody(expectedJsonResponse));
 
             // when
-            Bundle actualResponse =
-                await ddsStu3Provider.Patients.EverythingAsync(
-                    id: inputId);
+            string actualJsonResponse =
+                await ddsStu3Provider.Patients.GetStructuredRecordSerialisedAsync(
+                    nhsNumber: inputNhsNumber);
 
             // then
-            actualResponse.Should().BeEquivalentTo(expectedResponse);
+            actualJsonResponse.Should().BeEquivalentTo(expectedJsonResponse);
         }
     }
 }

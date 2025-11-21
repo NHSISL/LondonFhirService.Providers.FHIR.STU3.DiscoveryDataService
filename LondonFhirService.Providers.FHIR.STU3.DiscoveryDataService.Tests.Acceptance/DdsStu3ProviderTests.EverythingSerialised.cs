@@ -17,7 +17,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
     public partial class DdsStu3ProviderTests
     {
         [Fact]
-        public async Task ShouldEverythingAsync()
+        public async Task ShouldGetEverythingSerialisedAsync()
         {
             // given
             string randomId = GetRandomString();
@@ -42,7 +42,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
 
             var fhirJsonSerializer = new FhirJsonSerializer();
 
-            string expectedBundleResponse =
+            string expectedJsonResponse =
                 fhirJsonSerializer.SerializeToString(bundleResponse);
 
             this.wireMockServer
@@ -72,15 +72,15 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
                         .Create()
                         .WithStatusCode(HttpStatusCode.OK)
                         .WithHeader("Content-Type", "application/fhir+json")
-                        .WithBody(expectedBundleResponse));
+                        .WithBody(expectedJsonResponse));
 
             // when
-            Bundle actualResponse =
-                await ddsStu3Provider.Patients.EverythingAsync(
+            string actualJsonResponse =
+                await ddsStu3Provider.Patients.EverythingSerialisedAsync(
                     id: inputId);
 
             // then
-            actualResponse.Should().BeEquivalentTo(expectedResponse);
+            actualJsonResponse.Should().BeEquivalentTo(expectedJsonResponse);
         }
     }
 }

@@ -46,13 +46,13 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             PatientService mockedPatientService = patientServiceMock.Object;
 
             // when
-            ValueTask<Bundle> everythingAsyncAction =
+            ValueTask<Bundle> everythingTask =
                 mockedPatientService.EverythingAsync(
                     id: inputNhsNumber,
                     cancellationToken: default);
 
             PatientServiceException actualException =
-                await Assert.ThrowsAsync<PatientServiceException>(everythingAsyncAction.AsTask);
+                await Assert.ThrowsAsync<PatientServiceException>(everythingTask.AsTask);
 
             // then
             actualException.Should().BeEquivalentTo(expectedPatientServiceException);

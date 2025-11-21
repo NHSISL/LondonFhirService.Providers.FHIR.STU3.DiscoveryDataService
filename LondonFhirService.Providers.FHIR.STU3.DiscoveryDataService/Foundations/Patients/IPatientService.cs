@@ -17,6 +17,14 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             bool includeInactivePatients = false,
             CancellationToken cancellationToken = default);
 
+        ValueTask<string> GetStructuredRecordSerialisedAsync(
+            string nhsNumber,
+            string dateOfBirth = "",
+            bool demographicsOnly = false,
+            bool includeInactivePatients = false,
+            CancellationToken cancellationToken = default);
+
         ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken = default);
+        ValueTask<string> EverythingSerialisedAsync(string id, CancellationToken cancellationToken = default);
     }
 }
