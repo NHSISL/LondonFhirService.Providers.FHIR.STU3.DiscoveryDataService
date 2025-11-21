@@ -2,8 +2,10 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------
 
-using System.Threading.Tasks;
+using FluentAssertions;
+using Hl7.Fhir.Model;
 using Xunit;
+using Task = System.Threading.Tasks.Task;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integration
 {
@@ -16,7 +18,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integ
             string inputId = "9435797881";
 
             // when
-            await this.ddsStu3Provider.Patients.EverythingAsync(id: inputId);
+            Bundle patient = await this.ddsStu3Provider.Patients.EverythingAsync(id: inputId);
+            patient.Should().NotBeNull();
         }
     }
 }

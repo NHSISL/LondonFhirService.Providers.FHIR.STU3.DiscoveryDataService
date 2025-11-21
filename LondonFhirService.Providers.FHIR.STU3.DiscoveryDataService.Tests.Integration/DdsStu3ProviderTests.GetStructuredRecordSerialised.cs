@@ -3,6 +3,7 @@
 // ---------------------------------------------------------
 
 using System.Threading.Tasks;
+using FluentAssertions;
 using Xunit;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integration
@@ -16,7 +17,10 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integ
             string inputNhsNumber = "9435797881";
 
             // when
-            await this.ddsStu3Provider.Patients.GetStructuredRecordSerialisedAsync(nhsNumber: inputNhsNumber);
+            string patient = await this.ddsStu3Provider.Patients
+                .GetStructuredRecordSerialisedAsync(nhsNumber: inputNhsNumber);
+
+            patient.Should().NotBeNullOrWhiteSpace();
         }
     }
 }
