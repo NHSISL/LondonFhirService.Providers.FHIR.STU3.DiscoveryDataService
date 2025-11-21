@@ -2,6 +2,7 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------
 
+using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -60,17 +61,31 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
         });
 
-        public ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken = default) =>
+        public ValueTask<Bundle> EverythingAsync(
+            string id,
+            DateTimeOffset? start = null,
+            DateTimeOffset? end = null,
+            string typeFilter = null,
+            DateTimeOffset? since = null,
+            int? count = null,
+            CancellationToken cancellationToken = default) =>
         TryCatch(async () =>
         {
             ValidateArgsOnEverything(id);
-            string requestBody = CreateRequestBody(id);
+            string requestBody = CreateRequestBody(id);  // TODO: Extend to support other parameters
             var json = await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
 
             return this.fhirJsonDeserializer.Deserialize<Bundle>(json);
         });
 
-        public ValueTask<string> EverythingSerialisedAsync(string id, CancellationToken cancellationToken = default) =>
+        public ValueTask<string> EverythingSerialisedAsync(
+            string id,
+            DateTimeOffset? start = null,
+            DateTimeOffset? end = null,
+            string typeFilter = null,
+            DateTimeOffset? since = null,
+            int? count = null,
+            CancellationToken cancellationToken = default) =>
         TryCatch(async () =>
         {
             ValidateArgsOnEverything(id);
