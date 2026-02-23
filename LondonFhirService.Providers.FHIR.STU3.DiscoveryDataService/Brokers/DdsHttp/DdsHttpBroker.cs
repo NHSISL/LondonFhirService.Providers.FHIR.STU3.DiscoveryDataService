@@ -50,7 +50,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
                 "application/json");
 
             using var response = await this.apiHttp
-                .PostAsync("fhirTestAPI/patient/$getstructuredrecord", content, cancellationToken)
+                .PostAsync("patient/$getstructuredrecord", content, cancellationToken)
                 .ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
