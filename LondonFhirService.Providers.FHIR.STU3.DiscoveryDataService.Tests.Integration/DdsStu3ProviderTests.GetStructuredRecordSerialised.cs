@@ -18,9 +18,20 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integ
 
             // when
             string patient = await this.ddsStu3Provider.Patients
-                .GetStructuredRecordSerialisedAsync(nhsNumber: inputNhsNumber);
+                .GetStructuredRecordSerialisedAsync(nhsNumber: inputNhsNumber, demographicsOnly: false);
+
+            string patientDemographicsOnly = await this.ddsStu3Provider.Patients
+                .GetStructuredRecordSerialisedAsync(nhsNumber: inputNhsNumber, demographicsOnly: true);
 
             patient.Should().NotBeNullOrWhiteSpace();
+
+            int patientDemographicsOnlyLength = patientDemographicsOnly.Length;
+            int patientLength = patient.Length;
+
+            patientLength.Should().BeGreaterThan(patientDemographicsOnlyLength);
+
+            output.WriteLine($"Patient JSON length: {patientLength}");
+            output.WriteLine($"Patient with demographics only JSON length: {patientDemographicsOnlyLength}");
         }
     }
 }

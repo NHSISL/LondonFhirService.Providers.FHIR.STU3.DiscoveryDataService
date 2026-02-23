@@ -28,6 +28,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
         private static string GetRandomString() =>
             new MnemonicString().GetValue();
 
+        private static string GetRandomDateTimeOnly() =>
+            new DateTimeRange(earliestDate: new DateTime()).GetValue().ToString("yyyy-MM-dd");
+
         private static DateTimeOffset GetRandomDateTimeOffset() =>
             new DateTimeRange(earliestDate: new DateTime()).GetValue();
 

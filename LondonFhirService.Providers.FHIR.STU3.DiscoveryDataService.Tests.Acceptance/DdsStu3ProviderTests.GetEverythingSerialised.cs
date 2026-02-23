@@ -64,7 +64,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
                 .Given(
                     Request
                         .Create()
-                        .WithPath("/fhirTestAPI/patient/$getstructuredrecord")
+                        .WithPath("/patient/$getstructuredrecord")
                         .UsingPost())
 
                 .RespondWith(

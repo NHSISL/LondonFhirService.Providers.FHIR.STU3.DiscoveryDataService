@@ -20,7 +20,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             // given
             string randomNhsNumber = GetRandomString();
             string inputNhsNumber = randomNhsNumber;
-            string randomDateOfBirth = GetRandomString();
+            string randomDateOfBirth = GetRandomDateTimeOnly();
             string inputDateOfBirth = randomDateOfBirth;
             string expectedRequestBody = GetExpectedRequestBody(inputNhsNumber, inputDateOfBirth);
             string inputRequestBody = expectedRequestBody;
