@@ -23,13 +23,14 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 
         public ValueTask<Bundle> GetStructuredPatientAsync(
             string nhsNumber,
-            string dateOfBirth = "",
+            string dateOfBirth = null,
             bool demographicsOnly = false,
             bool includeInactivePatients = false,
             CancellationToken cancellationToken = default) =>
         TryCatch(async () =>
         {
-            ValidateArgsOnGetStructuredPatient(nhsNumber);
+            dateOfBirth = string.IsNullOrWhiteSpace(dateOfBirth) ? string.Empty : dateOfBirth.Trim();
+            ValidateArgsOnGetStructuredPatient(nhsNumber, dateOfBirth);
 
             string requestBody = CreateRequestBody(
                 nhsNumber,
@@ -44,13 +45,14 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 
         public ValueTask<string> GetStructuredRecordSerialisedAsync(
             string nhsNumber,
-            string dateOfBirth = "",
+            string dateOfBirth = null,
             bool demographicsOnly = false,
             bool includeInactivePatients = false,
             CancellationToken cancellationToken = default) =>
         TryCatch(async () =>
         {
-            ValidateArgsOnGetStructuredPatient(nhsNumber);
+            dateOfBirth = string.IsNullOrWhiteSpace(dateOfBirth) ? string.Empty : dateOfBirth.Trim();
+            ValidateArgsOnGetStructuredPatient(nhsNumber, dateOfBirth);
 
             string requestBody = CreateRequestBody(
                 nhsNumber,

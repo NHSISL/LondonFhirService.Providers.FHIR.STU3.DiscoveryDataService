@@ -13,14 +13,14 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
     {
         ValueTask<Bundle> GetStructuredPatientAsync(
             string nhsNumber,
-            string dateOfBirth = "",
+            string dateOfBirth = null,
             bool demographicsOnly = false,
             bool includeInactivePatients = false,
             CancellationToken cancellationToken = default);
 
         ValueTask<string> GetStructuredRecordSerialisedAsync(
             string nhsNumber,
-            string dateOfBirth = "",
+            string dateOfBirth = null,
             bool demographicsOnly = false,
             bool includeInactivePatients = false,
             CancellationToken cancellationToken = default);
