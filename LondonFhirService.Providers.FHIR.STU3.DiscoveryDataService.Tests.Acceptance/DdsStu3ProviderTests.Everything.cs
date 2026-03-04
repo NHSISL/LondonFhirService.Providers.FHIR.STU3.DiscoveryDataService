@@ -9,6 +9,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
+using Xunit;
 using Task = System.Threading.Tasks.Task;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Acceptance
