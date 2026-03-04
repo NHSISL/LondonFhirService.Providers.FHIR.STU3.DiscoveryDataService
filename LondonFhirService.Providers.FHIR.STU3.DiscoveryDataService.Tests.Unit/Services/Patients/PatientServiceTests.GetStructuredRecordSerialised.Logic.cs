@@ -4,8 +4,6 @@
 
 using System.Threading;
 using FluentAssertions;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
 using Moq;
 using Task = System.Threading.Tasks.Task;
@@ -15,7 +13,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
     public partial class PatientServiceTests
     {
         [Fact]
-        public async Task ShouldGetStructuredPatientAsync()
+        public async Task ShouldGetStructuredRecordSerialisedAsync()
         {
             // given
             string randomNhsNumber = GetRandomString();
@@ -25,10 +23,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             string expectedRequestBody = GetExpectedRequestBody(inputNhsNumber, inputDateOfBirth);
             string inputRequestBody = expectedRequestBody;
             CancellationToken inputCancellationToken = default;
-            Bundle randomBundle = CreateRandomBundle();
-            Bundle expectedBundle = randomBundle;
-            FhirJsonSerializer fhirJsonSerializer = new();
-            string randomJson = fhirJsonSerializer.SerializeToString(randomBundle);
+            string randomJson = GetRandomString();
+            string expectedJson = randomJson;
 
             var patientServiceMock = new Mock<PatientService>(this.ddsHttpBrokerMock.Object)
             {
@@ -50,7 +46,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             PatientService mockedPatientService = patientServiceMock.Object;
 
             // when
-            Bundle actualBundle = await mockedPatientService.GetStructuredPatientAsync(
+            string actualJson = await mockedPatientService.GetStructuredRecordSerialisedAsync(
                 nhsNumber: inputNhsNumber,
                 dateOfBirth: inputDateOfBirth,
                 demographicsOnly: false,
@@ -58,7 +54,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                 cancellationToken: inputCancellationToken);
 
             // then
-            actualBundle.Should().BeEquivalentTo(expectedBundle);
+            actualJson.Should().BeEquivalentTo(expectedJson);
 
             patientServiceMock.Verify(service =>
                 service.CreateRequestBody(

@@ -4,7 +4,6 @@
 
 using System.Threading.Tasks;
 using FluentAssertions;
-using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
 using Task = System.Threading.Tasks.Task;
 
@@ -16,7 +15,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public async Task ShouldThrowValidationExceptionOnEverythingAsync(string invalidText)
+        public async Task ShouldThrowValidationExceptionOnEverythingSerialisedAsync(string invalidText)
         {
             // given
             var invalidArgumentPatientServiceException =
@@ -33,13 +32,13 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     innerException: invalidArgumentPatientServiceException);
 
             // when
-            ValueTask<Bundle> everythingTask =
-                patientService.EverythingAsync(
+            ValueTask<string> everythingSerialisedTask =
+                patientService.EverythingSerialisedAsync(
                     id: invalidText,
                     cancellationToken: default);
 
             PatientValidationException actualException =
-                await Assert.ThrowsAsync<PatientValidationException>(everythingTask.AsTask);
+                await Assert.ThrowsAsync<PatientValidationException>(everythingSerialisedTask.AsTask);
 
             // then
             actualException.Should().BeEquivalentTo(expectedPatientValidationException);

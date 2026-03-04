@@ -3,6 +3,7 @@
 // ---------------------------------------------------------
 
 using System;
+using System.Globalization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
 using Xeptions;
 
@@ -10,13 +11,14 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 {
     public partial class PatientService
     {
-        private static void ValidateArgsOnGetStructuredPatient(string nhsNumber)
+        private static void ValidateArgsOnGetStructuredPatient(string nhsNumber, string dateOfBirth)
         {
             Validate(
                 createException: () => new InvalidArgumentPatientServiceException(
                     message: "Invalid patient service argument, please correct the errors and try again."),
 
-                (Rule: IsInvalid(nhsNumber), Parameter: "nhsNumber"));
+                (Rule: IsInvalid(nhsNumber), Parameter: "nhsNumber"),
+                (Rule: IsInvalidDateOnly(dateOfBirth), Parameter: "dateOfBirth"));
         }
 
         private static void ValidateArgsOnEverything(string id)
@@ -32,6 +34,20 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
         {
             Condition = string.IsNullOrWhiteSpace(text),
             Message = "Text is required"
+        };
+
+        private static dynamic IsInvalidDateOnly(string text) => new
+        {
+            Condition =
+                !string.IsNullOrWhiteSpace(text) &&
+                !DateOnly.TryParseExact(
+                    text,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out _),
+
+            Message = "Text must be a valid date string in format 'yyyy-MM-dd' e.g. '2002-10-01'"
         };
 
         private static void Validate<T>(

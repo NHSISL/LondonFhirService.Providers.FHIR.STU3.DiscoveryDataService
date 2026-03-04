@@ -8,8 +8,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp
@@ -20,8 +18,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
         private readonly HttpClient tokenHttp;
         private readonly HttpClient apiHttp;
         private readonly SemaphoreSlim tokenGate = new(1, 1);
-        private readonly FhirJsonDeserializer fhirJsonDeserializer = new();
-
         private string accessToken = string.Empty;
         private DateTimeOffset tokenExpiry = DateTimeOffset.MinValue;
         private bool disposed;
@@ -42,7 +38,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             this.apiHttp.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/fhir+json");
         }
 
-        public async ValueTask<Bundle> GetStructuredPatientAsync(
+        public async ValueTask<string> GetStructuredPatientAsync(
             string requestBody,
             CancellationToken cancellationToken = default)
         {
@@ -64,7 +60,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
                 .ReadAsStringAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            return this.fhirJsonDeserializer.Deserialize<Bundle>(json);
+            return json;
         }
 
         private async ValueTask EnsureAccessTokenAsync(CancellationToken cancellationToken)

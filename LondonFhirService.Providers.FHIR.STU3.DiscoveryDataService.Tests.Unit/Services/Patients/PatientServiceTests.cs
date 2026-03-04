@@ -28,6 +28,12 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
         private static string GetRandomString() =>
             new MnemonicString().GetValue();
 
+        private static string GetRandomDateTimeOnly() =>
+            new DateTimeRange(earliestDate: new DateTime()).GetValue().ToString("yyyy-MM-dd");
+
+        private static DateTimeOffset GetRandomDateTimeOffset() =>
+            new DateTimeRange(earliestDate: new DateTime()).GetValue();
+
         private static Patient CreateRandomPatient()
         {
             var patient = new Patient();
@@ -43,7 +49,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
 
             patient.Name = new List<HumanName> { humanName };
             patient.Gender = AdministrativeGender.Male;
-            patient.BirthDate = GetRandomString();
+            patient.BirthDate = GetRandomDateTimeOffset().ToString("yyyy-MM-dd");
 
             return patient;
         }
@@ -54,7 +60,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             {
                 Type = Bundle.BundleType.Searchset,
                 Total = 1,
-                Timestamp = DateTimeOffset.UtcNow
             };
 
             Patient patient = CreateRandomPatient();
@@ -66,12 +71,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     Search = new Bundle.SearchComponent { Score = 1 },
                     Resource = patient
                 }
-            };
-
-            bundle.Meta = new Meta
-            {
-                LastUpdated = DateTimeOffset.UtcNow,
-                Source = GetRandomString()
             };
 
             return bundle;

@@ -22,7 +22,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
         }
 
         [FhirOperation]
-        public async ValueTask<Bundle> Everything(
+        public async ValueTask<Bundle> EverythingAsync(
             string id,
             DateTimeOffset? start = null,
             DateTimeOffset? end = null,
@@ -30,23 +30,47 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
             DateTimeOffset? since = null,
             int? count = null,
             CancellationToken cancellationToken = default) =>
-                await patientService.EverythingAsync(id, cancellationToken);
+                await patientService.EverythingAsync(id, start, end, typeFilter, since, count, cancellationToken);
 
         [FhirOperation]
-        public ValueTask<Bundle> GetStructuredRecord(
+        public async ValueTask<string> EverythingSerialisedAsync(
+            string id,
+            DateTimeOffset? start = null,
+            DateTimeOffset? end = null,
+            string typeFilter = null,
+            DateTimeOffset? since = null,
+            int? count = null,
+            CancellationToken cancellationToken = default) =>
+            await patientService.EverythingSerialisedAsync(id, start, end, typeFilter, since, count, cancellationToken);
+
+        [FhirOperation]
+        public ValueTask<Bundle> GetStructuredRecordAsync(
             string nhsNumber,
-            DateTime? dateOfBirth = null,
+            string dateOfBirth = null,
             bool? demographicsOnly = null,
             bool? includeInactivePatients = null,
             CancellationToken cancellationToken = default) =>
                 patientService.GetStructuredPatientAsync(
                     nhsNumber,
-                    dateOfBirth?.ToString("yyyy-MM-dd") ?? string.Empty,
+                    dateOfBirth,
                     demographicsOnly ?? false,
                     includeInactivePatients ?? false,
                     cancellationToken);
 
-        public ValueTask<Bundle> Match(Parameters parameters, CancellationToken cancellationToken = default) =>
+        public ValueTask<string> GetStructuredRecordSerialisedAsync(
+            string nhsNumber,
+            string dateOfBirth = null,
+            bool? demographicsOnly = null,
+            bool? includeInactivePatients = null,
+            CancellationToken cancellationToken = default) =>
+                patientService.GetStructuredRecordSerialisedAsync(
+                    nhsNumber,
+                    dateOfBirth,
+                    demographicsOnly ?? false,
+                    includeInactivePatients ?? false,
+                    cancellationToken);
+
+        public ValueTask<Bundle> MatchAsync(Parameters parameters, CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
     }
 }

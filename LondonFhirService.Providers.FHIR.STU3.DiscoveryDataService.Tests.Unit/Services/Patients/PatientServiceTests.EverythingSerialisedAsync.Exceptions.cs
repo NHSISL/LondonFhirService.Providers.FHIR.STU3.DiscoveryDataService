@@ -5,7 +5,6 @@
 using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
 using Moq;
@@ -16,7 +15,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
     public partial class PatientServiceTests
     {
         [Fact]
-        public async Task ShouldThrowServiceExceptionOnGetStructuredPatientAsync()
+        public async Task ShouldThrowServiceExceptionOnEverythingSerialisedAsyncAsync()
         {
             // given
             var serviceException = new Exception(GetRandomString());
@@ -46,16 +45,13 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             PatientService mockedPatientService = patientServiceMock.Object;
 
             // when
-            ValueTask<Bundle> getStructuredPatientTask =
-                mockedPatientService.GetStructuredPatientAsync(
-                    nhsNumber: inputNhsNumber,
-                    dateOfBirth: string.Empty,
-                    demographicsOnly: false,
-                    includeInactivePatients: false,
+            ValueTask<string> everythingSerialisedTask =
+                mockedPatientService.EverythingSerialisedAsync(
+                    id: inputNhsNumber,
                     cancellationToken: default);
 
             PatientServiceException actualException =
-                await Assert.ThrowsAsync<PatientServiceException>(getStructuredPatientTask.AsTask);
+                await Assert.ThrowsAsync<PatientServiceException>(everythingSerialisedTask.AsTask);
 
             // then
             actualException.Should().BeEquivalentTo(expectedPatientServiceException);

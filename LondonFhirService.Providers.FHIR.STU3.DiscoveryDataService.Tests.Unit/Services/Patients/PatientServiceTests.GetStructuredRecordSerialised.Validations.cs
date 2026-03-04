@@ -4,7 +4,6 @@
 
 using System.Threading.Tasks;
 using FluentAssertions;
-using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
 using Task = System.Threading.Tasks.Task;
 
@@ -16,7 +15,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public async Task ShouldThrowValidationExceptionOnEverythingAsync(string invalidText)
+        public async Task ShouldThrowValidationExceptionOnGetStructuredRecordSerialisedAsync(string invalidText)
         {
             // given
             var invalidArgumentPatientServiceException =
@@ -24,7 +23,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     "Invalid patient service argument, please correct the errors and try again.");
 
             invalidArgumentPatientServiceException.AddData(
-                key: "id",
+                key: "nhsNumber",
                 values: "Text is required");
 
             var expectedPatientValidationException =
@@ -33,17 +32,19 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     innerException: invalidArgumentPatientServiceException);
 
             // when
-            ValueTask<Bundle> everythingTask =
-                patientService.EverythingAsync(
-                    id: invalidText,
+            ValueTask<string> getStructuredPatientAsyncAction =
+                patientService.GetStructuredRecordSerialisedAsync(
+                    nhsNumber: invalidText,
+                    dateOfBirth: string.Empty,
+                    demographicsOnly: false,
+                    includeInactivePatients: false,
                     cancellationToken: default);
 
             PatientValidationException actualException =
-                await Assert.ThrowsAsync<PatientValidationException>(everythingTask.AsTask);
+                await Assert.ThrowsAsync<PatientValidationException>(getStructuredPatientAsyncAction.AsTask);
 
             // then
             actualException.Should().BeEquivalentTo(expectedPatientValidationException);
-
             this.ddsHttpBrokerMock.VerifyNoOtherCalls();
         }
     }

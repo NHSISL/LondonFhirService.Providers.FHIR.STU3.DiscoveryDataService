@@ -64,7 +64,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
                 .Given(
                     Request
                         .Create()
-                        .WithPath("/fhirTestAPI/patient/$getstructuredrecord")
+                        .WithPath("/patient/$getstructuredrecord")
                         .UsingPost())
 
                 .RespondWith(
@@ -76,7 +76,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Accep
 
             // when
             Bundle actualResponse =
-                await ddsStu3Provider.Patients.GetStructuredRecord(
+                await ddsStu3Provider.Patients.GetStructuredRecordAsync(
                     nhsNumber: inputNhsNumber);
 
             // then
