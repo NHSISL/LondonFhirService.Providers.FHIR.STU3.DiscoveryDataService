@@ -2,8 +2,10 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------
 
-using System.Threading.Tasks;
+using FluentAssertions;
+using Hl7.Fhir.Model;
 using Xunit;
+using Task = System.Threading.Tasks.Task;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integration
 {
