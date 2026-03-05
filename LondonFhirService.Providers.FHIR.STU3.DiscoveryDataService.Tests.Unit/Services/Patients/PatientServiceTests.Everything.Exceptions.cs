@@ -34,7 +34,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     message: "Patient service error occurred, please contact support.",
                     innerException: failedServicePatientException);
 
-            var patientServiceMock = new Mock<PatientService>(this.ddsHttpBrokerMock.Object)
+            var patientServiceMock = new Mock<PatientService>(
+                this.ddsHttpBrokerMock.Object,
+                this.loggingBrokerMock.Object)
             {
                 CallBase = true
             };
@@ -65,8 +67,14 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     It.IsAny<bool>()),
                         Times.Once);
 
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedPatientServiceException))),
+                        Times.Once);
+
             patientServiceMock.VerifyNoOtherCalls();
             this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
         }
     }
 }

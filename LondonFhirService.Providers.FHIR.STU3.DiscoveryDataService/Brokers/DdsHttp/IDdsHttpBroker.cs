@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp
 {
-    public interface IDdsHttpBroker
+    internal interface IDdsHttpBroker
     {
         ValueTask<string> GetStructuredPatientAsync(string requestBody, CancellationToken cancellationToken = default);
     }

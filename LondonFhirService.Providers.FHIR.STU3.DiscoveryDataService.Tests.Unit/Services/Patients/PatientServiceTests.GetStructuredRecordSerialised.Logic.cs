@@ -26,7 +26,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             string randomJson = GetRandomString();
             string expectedJson = randomJson;
 
-            var patientServiceMock = new Mock<PatientService>(this.ddsHttpBrokerMock.Object)
+            var patientServiceMock = new Mock<PatientService>(
+                this.ddsHttpBrokerMock.Object,
+                this.loggingBrokerMock.Object)
             {
                 CallBase = true
             };
@@ -70,6 +72,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
 
             patientServiceMock.VerifyNoOtherCalls();
             this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
         }
     }
 }

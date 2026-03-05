@@ -12,7 +12,7 @@ using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Pat
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
 {
-    public class PatientResource : ResourceOperationBase<Patient>, IPatientResource
+    internal class PatientResource : ResourceOperationBase<Patient>, IPatientResource
     {
         private readonly IPatientService patientService;
 

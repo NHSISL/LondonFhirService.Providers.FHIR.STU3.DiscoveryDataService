@@ -10,7 +10,7 @@ using Xeptions;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
 {
-    public partial class PatientService
+    internal partial class PatientService
     {
         private delegate ValueTask<Bundle> ReturningBundleFunction();
         private delegate ValueTask<string> ReturningStringFunction();
@@ -65,6 +65,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                 message: "Patient validation error occurred, please fix the errors and try again.",
                 innerException: exception);
 
+            await this.loggingBroker.LogErrorAsync(pdsValidationException);
+
             return pdsValidationException;
         }
 
@@ -73,6 +75,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             var pdsServiceException = new PatientServiceException(
                 message: "Patient service error occurred, please contact support.",
                 innerException: exception);
+
+            await this.loggingBroker.LogErrorAsync(pdsServiceException);
 
             return pdsServiceException;
         }

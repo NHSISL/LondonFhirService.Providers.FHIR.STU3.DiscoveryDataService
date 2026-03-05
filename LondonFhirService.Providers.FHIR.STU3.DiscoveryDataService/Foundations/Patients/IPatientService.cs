@@ -9,7 +9,7 @@ using Hl7.Fhir.Model;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
 {
-    public interface IPatientService
+    internal interface IPatientService
     {
         ValueTask<Bundle> GetStructuredPatientAsync(
             string nhsNumber,

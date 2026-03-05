@@ -12,7 +12,7 @@ using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp
 {
-    public class DdsHttpBroker : IDdsHttpBroker, IDisposable
+    internal class DdsHttpBroker : IDdsHttpBroker, IDisposable
     {
         private readonly DdsConfigurations ddsConfigurations;
         private readonly HttpClient tokenHttp;
