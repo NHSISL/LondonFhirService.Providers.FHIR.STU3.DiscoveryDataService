@@ -5,6 +5,7 @@
 using System.Threading;
 using FluentAssertions;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
 using Moq;
 using Task = System.Threading.Tasks.Task;
@@ -19,13 +20,15 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             // given
             string randomNhsNumber = GetRandomString();
             string inputNhsNumber = randomNhsNumber;
-            string randomDateOfBirth = GetRandomString();
+            string randomDateOfBirth = GetRandomDateTimeOnly();
             string inputDateOfBirth = randomDateOfBirth;
             string expectedRequestBody = GetExpectedRequestBody(inputNhsNumber, inputDateOfBirth);
             string inputRequestBody = expectedRequestBody;
             CancellationToken inputCancellationToken = default;
             Bundle randomBundle = CreateRandomBundle();
             Bundle expectedBundle = randomBundle;
+            FhirJsonSerializer fhirJsonSerializer = new();
+            string randomJson = fhirJsonSerializer.SerializeToString(randomBundle);
 
             var patientServiceMock = new Mock<PatientService>(
                 this.ddsHttpBrokerMock.Object,
@@ -44,7 +47,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
 
             this.ddsHttpBrokerMock.Setup(broker =>
                 broker.GetStructuredPatientAsync(inputRequestBody, inputCancellationToken))
-                    .ReturnsAsync(randomBundle);
+                    .ReturnsAsync(randomJson);
 
             PatientService mockedPatientService = patientServiceMock.Object;
 

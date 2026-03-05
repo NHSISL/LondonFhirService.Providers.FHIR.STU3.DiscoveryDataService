@@ -2,11 +2,13 @@
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------
 
+using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Loggings;
 
@@ -15,11 +17,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
     internal partial class PatientService : IPatientService
     {
         private readonly IDdsHttpBroker ddsHttpBroker;
-<<<<<<< Updated upstream
-=======
         private readonly ILoggingBroker loggingBroker;
         private readonly FhirJsonDeserializer fhirJsonDeserializer = new();
->>>>>>> Stashed changes
 
         public PatientService(IDdsHttpBroker ddsHttpBroker, ILoggingBroker loggingBroker)
         {
@@ -29,13 +28,36 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 
         public ValueTask<Bundle> GetStructuredPatientAsync(
             string nhsNumber,
-            string dateOfBirth = "",
+            string dateOfBirth = null,
             bool demographicsOnly = false,
             bool includeInactivePatients = false,
             CancellationToken cancellationToken = default) =>
         TryCatch(async () =>
         {
-            ValidateArgsOnGetStructuredPatient(nhsNumber);
+            dateOfBirth = string.IsNullOrWhiteSpace(dateOfBirth) ? string.Empty : dateOfBirth.Trim();
+            ValidateArgsOnGetStructuredPatient(nhsNumber, dateOfBirth);
+
+            string requestBody = CreateRequestBody(
+                nhsNumber,
+                dateOfBirth,
+                demographicsOnly,
+                includeInactivePatients);
+
+            var json = await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
+
+            return this.fhirJsonDeserializer.Deserialize<Bundle>(json);
+        });
+
+        public ValueTask<string> GetStructuredRecordSerialisedAsync(
+            string nhsNumber,
+            string dateOfBirth = null,
+            bool demographicsOnly = false,
+            bool includeInactivePatients = false,
+            CancellationToken cancellationToken = default) =>
+        TryCatch(async () =>
+        {
+            dateOfBirth = string.IsNullOrWhiteSpace(dateOfBirth) ? string.Empty : dateOfBirth.Trim();
+            ValidateArgsOnGetStructuredPatient(nhsNumber, dateOfBirth);
 
             string requestBody = CreateRequestBody(
                 nhsNumber,
@@ -46,7 +68,31 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             return await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
         });
 
-        public ValueTask<Bundle> EverythingAsync(string id, CancellationToken cancellationToken = default) =>
+        public ValueTask<Bundle> EverythingAsync(
+            string id,
+            DateTimeOffset? start = null,
+            DateTimeOffset? end = null,
+            string typeFilter = null,
+            DateTimeOffset? since = null,
+            int? count = null,
+            CancellationToken cancellationToken = default) =>
+        TryCatch(async () =>
+        {
+            ValidateArgsOnEverything(id);
+            string requestBody = CreateRequestBody(id);  // TODO: Extend to support other parameters
+            var json = await this.ddsHttpBroker.GetStructuredPatientAsync(requestBody, cancellationToken);
+
+            return this.fhirJsonDeserializer.Deserialize<Bundle>(json);
+        });
+
+        public ValueTask<string> EverythingSerialisedAsync(
+            string id,
+            DateTimeOffset? start = null,
+            DateTimeOffset? end = null,
+            string typeFilter = null,
+            DateTimeOffset? since = null,
+            int? count = null,
+            CancellationToken cancellationToken = default) =>
         TryCatch(async () =>
         {
             ValidateArgsOnEverything(id);

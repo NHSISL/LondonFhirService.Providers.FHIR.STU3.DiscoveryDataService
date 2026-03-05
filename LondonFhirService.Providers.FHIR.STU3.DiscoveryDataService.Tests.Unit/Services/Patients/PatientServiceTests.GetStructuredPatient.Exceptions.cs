@@ -48,7 +48,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             PatientService mockedPatientService = patientServiceMock.Object;
 
             // when
-            ValueTask<Bundle> getStructuredPatientAsyncAction =
+            ValueTask<Bundle> getStructuredPatientTask =
                 mockedPatientService.GetStructuredPatientAsync(
                     nhsNumber: inputNhsNumber,
                     dateOfBirth: string.Empty,
@@ -57,7 +57,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                     cancellationToken: default);
 
             PatientServiceException actualException =
-                await Assert.ThrowsAsync<PatientServiceException>(getStructuredPatientAsyncAction.AsTask);
+                await Assert.ThrowsAsync<PatientServiceException>(getStructuredPatientTask.AsTask);
 
             // then
             actualException.Should().BeEquivalentTo(expectedPatientServiceException);
