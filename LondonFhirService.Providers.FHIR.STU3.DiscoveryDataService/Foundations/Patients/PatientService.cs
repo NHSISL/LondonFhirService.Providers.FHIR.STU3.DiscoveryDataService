@@ -8,15 +8,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Loggings;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
 {
-    public partial class PatientService : IPatientService
+    internal partial class PatientService : IPatientService
     {
         private readonly IDdsHttpBroker ddsHttpBroker;
+<<<<<<< Updated upstream
+=======
+        private readonly ILoggingBroker loggingBroker;
+        private readonly FhirJsonDeserializer fhirJsonDeserializer = new();
+>>>>>>> Stashed changes
 
-        public PatientService(IDdsHttpBroker ddsHttpBroker) =>
+        public PatientService(IDdsHttpBroker ddsHttpBroker, ILoggingBroker loggingBroker)
+        {
             this.ddsHttpBroker = ddsHttpBroker;
+            this.loggingBroker = loggingBroker;
+        }
 
         public ValueTask<Bundle> GetStructuredPatientAsync(
             string nhsNumber,

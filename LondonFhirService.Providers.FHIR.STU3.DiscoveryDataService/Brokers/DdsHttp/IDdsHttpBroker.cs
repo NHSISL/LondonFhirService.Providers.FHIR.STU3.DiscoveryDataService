@@ -8,7 +8,7 @@ using Hl7.Fhir.Model;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp
 {
-    public interface IDdsHttpBroker
+    internal interface IDdsHttpBroker
     {
         ValueTask<Bundle> GetStructuredPatientAsync(string requestBody, CancellationToken cancellationToken = default);
     }

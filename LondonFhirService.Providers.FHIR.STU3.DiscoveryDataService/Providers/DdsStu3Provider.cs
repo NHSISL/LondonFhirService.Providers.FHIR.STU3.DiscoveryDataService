@@ -6,10 +6,13 @@ using System;
 using LondonFhirService.Providers.FHIR.STU3.Abstractions;
 using LondonFhirService.Providers.FHIR.STU3.Abstractions.Models.Resources;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Loggings;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
 {
@@ -18,10 +21,13 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
         private readonly DdsConfigurations configurations;
         private IPatientResource patientResource { get; set; }
 
-        public DdsStu3Provider(DdsConfigurations configurations)
+        public DdsStu3Provider(DdsConfigurations configurations, ILogger<DdsStu3Provider> logger = null)
         {
+            ILogger<DdsStu3Provider> safeLogger =
+                logger ?? NullLogger<DdsStu3Provider>.Instance;
+
             this.configurations = configurations;
-            IServiceProvider serviceProvider = RegisterServices(configurations);
+            IServiceProvider serviceProvider = RegisterServices(configurations, safeLogger);
             InitializeClients(serviceProvider);
         }
 
@@ -37,9 +43,11 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
         private void InitializeClients(IServiceProvider serviceProvider) =>
             this.patientResource = serviceProvider.GetRequiredService<IPatientResource>();
 
-        private static IServiceProvider RegisterServices(DdsConfigurations configurations)
+        private static IServiceProvider RegisterServices(DdsConfigurations configurations, ILogger<DdsStu3Provider> logger)
         {
             var serviceCollection = new ServiceCollection()
+                .AddSingleton(logger)
+                .AddTransient<ILoggingBroker, LoggingBroker>()
                 .AddTransient<IDdsHttpBroker, DdsHttpBroker>()
                 .AddTransient<IPatientService, PatientService>()
                 .AddTransient<IPatientResource, PatientResource>()

@@ -8,7 +8,7 @@ using Xeptions;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
 {
-    public partial class PatientService
+    internal partial class PatientService
     {
         private static void ValidateArgsOnGetStructuredPatient(string nhsNumber)
         {
