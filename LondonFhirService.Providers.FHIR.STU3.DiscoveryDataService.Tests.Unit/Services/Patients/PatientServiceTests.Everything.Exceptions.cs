@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
 using Moq;
@@ -400,6 +401,47 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
                         Times.Once);
 
             patientServiceMock.VerifyNoOtherCalls();
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldThrowDependencyExceptionOnEverythingWhenFhirDeserializationFailsAsync()
+        {
+            // given
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+            string invalidFhirJson = "{ \"resourceType\": \"OperationOutcome\" }";
+
+            this.ddsHttpBrokerMock
+                .Setup(broker => broker.GetStructuredPatientAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(invalidFhirJson);
+
+            // when
+            ValueTask<Bundle> everythingTask =
+                this.patientService.EverythingAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
+
+            PatientDependencyException actualException =
+                await Assert.ThrowsAsync<PatientDependencyException>(everythingTask.AsTask);
+
+            // then
+            actualException.InnerException.Should().BeOfType<FailedPatientDependencyException>();
+            actualException.InnerException.InnerException.Should().BeOfType<DeserializationFailedException>();
+
+            this.ddsHttpBrokerMock.Verify(broker =>
+                broker.GetStructuredPatientAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()),
+                        Times.Once);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(actualException))),
+                    Times.Once);
+
             this.ddsHttpBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }

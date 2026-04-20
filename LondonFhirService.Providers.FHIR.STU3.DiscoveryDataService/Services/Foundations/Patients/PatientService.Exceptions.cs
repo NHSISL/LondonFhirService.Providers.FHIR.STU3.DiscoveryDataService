@@ -6,6 +6,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
 using Xeptions;
 
@@ -64,6 +65,16 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                         message: "Failed patient dependency error occurred, contact support.",
                         innerException: invalidOperationException,
                         data: invalidOperationException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
+            }
+            catch (DeserializationFailedException deserializationFailedException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: "Failed to deserialise the patient FHIR response from the dependency, contact support.",
+                        innerException: deserializationFailedException,
+                        data: deserializationFailedException.Data);
 
                 throw await CreateAndLogDependencyException(failedPatientDependencyException);
             }
