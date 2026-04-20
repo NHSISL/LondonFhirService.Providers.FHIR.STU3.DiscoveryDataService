@@ -1,4 +1,4 @@
-﻿// ---------------------------------------------------------
+// ---------------------------------------------------------
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------
 
@@ -8,9 +8,9 @@ using Xeptions;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions
 {
-    public class PatientServiceException : Xeption, IFhirServiceException
+    public class PatientDependencyException : Xeption, IFhirDependencyException
     {
-        public PatientServiceException(string message, Exception innerException)
+        public PatientDependencyException(string message, Exception innerException)
             : base(message, innerException)
         { }
     }

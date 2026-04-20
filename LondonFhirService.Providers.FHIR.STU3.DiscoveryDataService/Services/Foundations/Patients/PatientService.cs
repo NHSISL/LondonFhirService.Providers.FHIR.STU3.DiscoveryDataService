@@ -11,6 +11,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Loggings;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Services.Foundations.Patients;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
 {

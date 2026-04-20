@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.Abstractions.Models.Capabilities;
 using LondonFhirService.Providers.FHIR.STU3.Abstractions.Models.Resources;
-using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Services.Foundations.Patients;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources
 {

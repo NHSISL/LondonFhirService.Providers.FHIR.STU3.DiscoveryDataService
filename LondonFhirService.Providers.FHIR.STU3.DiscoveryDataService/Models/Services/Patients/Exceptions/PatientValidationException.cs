@@ -3,11 +3,12 @@
 // ---------------------------------------------------------
 
 using System;
+using LondonFhirService.Providers.FHIR.STU3.Abstractions.Models.Exceptions;
 using Xeptions;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions
 {
-    public class PatientValidationException : Xeption
+    public class PatientValidationException : Xeption, IFhirValidationException
     {
         public PatientValidationException(string message, Exception innerException)
             : base(message, innerException)

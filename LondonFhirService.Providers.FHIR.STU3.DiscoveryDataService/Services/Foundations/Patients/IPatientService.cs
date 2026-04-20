@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 
-namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
+namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Services.Foundations.Patients
 {
     internal interface IPatientService
     {

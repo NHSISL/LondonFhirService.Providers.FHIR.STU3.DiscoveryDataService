@@ -10,6 +10,7 @@ using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Logging
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Resources;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Services.Foundations.Patients;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

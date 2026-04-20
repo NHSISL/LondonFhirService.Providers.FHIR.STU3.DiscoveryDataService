@@ -1,0 +1,213 @@
+﻿// ---------------------------------------------------------
+// Copyright (c) North East London ICB. All rights reserved.
+// ---------------------------------------------------------
+
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
+using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
+using Xeptions;
+
+namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
+{
+    internal partial class PatientService
+    {
+        private delegate ValueTask<Bundle> ReturningBundleFunction();
+        private delegate ValueTask<string> ReturningStringFunction();
+
+        private async ValueTask<Bundle> TryCatch(ReturningBundleFunction returningBundleFunction)
+        {
+            try
+            {
+                return await returningBundleFunction();
+            }
+            catch (InvalidArgumentPatientServiceException invalidArgumentPatientServiceException)
+            {
+                throw await CreateAndLogValidationExceptionAsync(invalidArgumentPatientServiceException);
+            }
+            catch (OperationCanceledException operationCanceledException)
+                when (operationCanceledException.CancellationToken.IsCancellationRequested)
+            {
+                var cancelledPatientServiceException =
+                    new CancelledPatientServiceException(
+                        message: "Patient service was cancelled, please try again.",
+                        innerException: operationCanceledException,
+                        data: operationCanceledException.Data);
+
+                throw await CreateAndLogDependencyCancellationExceptionAsync(cancelledPatientServiceException);
+            }
+            catch (OperationCanceledException operationCanceledException)
+            {
+                var failedPatientServiceException =
+                    new FailedPatientServiceException(
+                        message: "Network connectivity failure occurred, please check connection and try again.",
+                        innerException: operationCanceledException,
+                        data: operationCanceledException.Data);
+
+                throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
+            }
+            catch (HttpRequestException httpRequestException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: BuildHttpRequestExceptionMessage(httpRequestException),
+                        innerException: httpRequestException,
+                        data: httpRequestException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
+            }
+            catch (InvalidOperationException invalidOperationException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: "Failed patient dependency error occurred, contact support.",
+                        innerException: invalidOperationException,
+                        data: invalidOperationException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
+            }
+            catch (DeserializationFailedException deserializationFailedException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: "Failed to deserialise the patient FHIR response from the dependency, contact support.",
+                        innerException: deserializationFailedException,
+                        data: deserializationFailedException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
+            }
+            catch (Exception exception)
+            {
+                var failedPatientServiceException =
+                    new FailedPatientServiceException(
+                        message: "Failed patient service error occurred, please contact support.",
+                        innerException: exception,
+                        data: exception.Data);
+
+                throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
+            }
+        }
+
+        private async ValueTask<string> TryCatch(ReturningStringFunction returningStringFunction)
+        {
+            try
+            {
+                return await returningStringFunction();
+            }
+            catch (InvalidArgumentPatientServiceException invalidArgumentPatientServiceException)
+            {
+                throw await CreateAndLogValidationExceptionAsync(invalidArgumentPatientServiceException);
+            }
+            catch (OperationCanceledException operationCanceledException)
+                when (operationCanceledException.CancellationToken.IsCancellationRequested)
+            {
+                var cancelledPatientServiceException =
+                    new CancelledPatientServiceException(
+                        message: "Patient service was cancelled, please try again.",
+                        innerException: operationCanceledException,
+                        data: operationCanceledException.Data);
+
+                throw await CreateAndLogDependencyCancellationExceptionAsync(cancelledPatientServiceException);
+            }
+            catch (OperationCanceledException operationCanceledException)
+            {
+                var failedPatientServiceException =
+                    new FailedPatientServiceException(
+                        message: "Network connectivity failure occurred, please check connection and try again.",
+                        innerException: operationCanceledException,
+                        data: operationCanceledException.Data);
+
+                throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
+            }
+            catch (HttpRequestException httpRequestException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: BuildHttpRequestExceptionMessage(httpRequestException),
+                        innerException: httpRequestException,
+                        data: httpRequestException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
+            }
+            catch (InvalidOperationException invalidOperationException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: "Failed patient dependency error occurred, contact support.",
+                        innerException: invalidOperationException,
+                        data: invalidOperationException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
+            }
+            catch (Exception exception)
+            {
+                var failedPatientServiceException =
+                    new FailedPatientServiceException(
+                        message: "Failed patient service error occurred, please contact support.",
+                        innerException: exception,
+                        data: exception.Data);
+
+                throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
+            }
+        }
+
+        private async ValueTask<PatientValidationException> CreateAndLogValidationExceptionAsync(Xeption exception)
+        {
+            var pdsValidationException = new PatientValidationException(
+                message: "Patient validation error occurred, please fix the errors and try again.",
+                innerException: exception);
+
+            await this.loggingBroker.LogErrorAsync(pdsValidationException);
+
+            return pdsValidationException;
+        }
+
+        private async ValueTask<PatientServiceException> CreateAndLogServiceExceptionAsync(Xeption exception)
+        {
+            var pdsServiceException = new PatientServiceException(
+                message: "Patient service error occurred, please contact support.",
+                innerException: exception);
+
+            await this.loggingBroker.LogErrorAsync(pdsServiceException);
+
+            return pdsServiceException;
+        }
+
+        private async ValueTask<PatientDependencyException> CreateAndLogDependencyException(Xeption exception)
+        {
+            var patientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient service dependency error occurred, contact support.",
+                    innerException: exception);
+
+            await this.loggingBroker.LogErrorAsync(patientDependencyException);
+
+            return patientDependencyException;
+        }
+
+        private async ValueTask<PatientDependencyException> CreateAndLogDependencyCancellationExceptionAsync(
+            Xeption exception)
+        {
+            var patientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient dependency cancellation error occurred, please try again.",
+                    innerException: exception);
+
+            await this.loggingBroker.LogErrorAsync(patientDependencyException);
+
+            return patientDependencyException;
+        }
+
+        private static string BuildHttpRequestExceptionMessage(HttpRequestException httpRequestException)
+        {
+            return httpRequestException.StatusCode.HasValue
+                ? $"Failed patient HTTP dependency error occurred - " +
+                    $"HTTP {(int)httpRequestException.StatusCode.Value} " +
+                    $"({httpRequestException.StatusCode.Value}), contact support."
+                : "Failed patient HTTP dependency error occurred - " +
+                    "no HTTP status code returned (possible network failure), contact support.";
+        }
+    }
+}
