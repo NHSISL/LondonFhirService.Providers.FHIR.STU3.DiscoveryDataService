@@ -3,6 +3,9 @@
 // ---------------------------------------------------------
 
 using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Hl7.Fhir.Model;
@@ -70,6 +73,330 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             this.loggingBrokerMock.Verify(broker =>
                 broker.LogErrorAsync(It.Is(SameExceptionAs(
                     expectedPatientServiceException))),
+                        Times.Once);
+
+            patientServiceMock.VerifyNoOtherCalls();
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldThrowDependencyExceptionOnEverythingWhenCancellationRequestedAsync()
+        {
+            // given
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+            var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            var taskCanceledException =
+                new TaskCanceledException(
+                    message: "Task was cancelled.",
+                    innerException: null,
+                    token: cancellationTokenSource.Token);
+
+            var cancelledPatientServiceException =
+                new CancelledPatientServiceException(
+                    message: "Patient service was cancelled, please try again.",
+                    innerException: taskCanceledException,
+                    data: taskCanceledException.Data);
+
+            var expectedPatientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient dependency cancellation error occurred, please try again.",
+                    innerException: cancelledPatientServiceException);
+
+            var patientServiceMock = new Mock<PatientService>(
+                this.ddsHttpBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
+
+            patientServiceMock.Setup(service =>
+                service.CreateRequestBody(inputNhsNumber, It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                    .Throws(taskCanceledException);
+
+            PatientService mockedPatientService = patientServiceMock.Object;
+
+            // when
+            ValueTask<Bundle> everythingTask =
+                mockedPatientService.EverythingAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
+
+            PatientDependencyException actualException =
+                await Assert.ThrowsAsync<PatientDependencyException>(everythingTask.AsTask);
+
+            // then
+            actualException.Should().BeEquivalentTo(expectedPatientDependencyException);
+
+            patientServiceMock.Verify(service =>
+                service.CreateRequestBody(
+                    inputNhsNumber,
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()),
+                        Times.Once);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedPatientDependencyException))),
+                        Times.Once);
+
+            patientServiceMock.VerifyNoOtherCalls();
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldThrowServiceExceptionOnEverythingWhenNetworkFailureAsync()
+        {
+            // given
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+            var taskCanceledException = new TaskCanceledException();
+
+            var failedPatientServiceException =
+                new FailedPatientServiceException(
+                    message: "Network connectivity failure occurred, please check connection and try again.",
+                    innerException: taskCanceledException,
+                    data: taskCanceledException.Data);
+
+            var expectedPatientServiceException =
+                new PatientServiceException(
+                    message: "Patient service error occurred, please contact support.",
+                    innerException: failedPatientServiceException);
+
+            var patientServiceMock = new Mock<PatientService>(
+                this.ddsHttpBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
+
+            patientServiceMock.Setup(service =>
+                service.CreateRequestBody(inputNhsNumber, It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                    .Throws(taskCanceledException);
+
+            PatientService mockedPatientService = patientServiceMock.Object;
+
+            // when
+            ValueTask<Bundle> everythingTask =
+                mockedPatientService.EverythingAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
+
+            PatientServiceException actualException =
+                await Assert.ThrowsAsync<PatientServiceException>(everythingTask.AsTask);
+
+            // then
+            actualException.Should().BeEquivalentTo(expectedPatientServiceException);
+
+            patientServiceMock.Verify(service =>
+                service.CreateRequestBody(
+                    inputNhsNumber,
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()),
+                        Times.Once);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedPatientServiceException))),
+                        Times.Once);
+
+            patientServiceMock.VerifyNoOtherCalls();
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldThrowDependencyExceptionOnEverythingWhenHttpRequestExceptionOccursAsync()
+        {
+            // given
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+            var httpRequestException = new HttpRequestException();
+
+            var failedPatientDependencyException =
+                new FailedPatientDependencyException(
+                    message: "Failed patient HTTP dependency error occurred - " +
+                        "no HTTP status code returned (possible network failure), contact support.",
+                    innerException: httpRequestException,
+                    data: httpRequestException.Data);
+
+            var expectedPatientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient service dependency error occurred, contact support.",
+                    innerException: failedPatientDependencyException);
+
+            var patientServiceMock = new Mock<PatientService>(
+                this.ddsHttpBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
+
+            patientServiceMock.Setup(service =>
+                service.CreateRequestBody(inputNhsNumber, It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                    .Throws(httpRequestException);
+
+            PatientService mockedPatientService = patientServiceMock.Object;
+
+            // when
+            ValueTask<Bundle> everythingTask =
+                mockedPatientService.EverythingAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
+
+            PatientDependencyException actualException =
+                await Assert.ThrowsAsync<PatientDependencyException>(everythingTask.AsTask);
+
+            // then
+            actualException.Should().BeEquivalentTo(expectedPatientDependencyException);
+
+            patientServiceMock.Verify(service =>
+                service.CreateRequestBody(
+                    inputNhsNumber,
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()),
+                        Times.Once);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedPatientDependencyException))),
+                        Times.Once);
+
+            patientServiceMock.VerifyNoOtherCalls();
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldThrowDependencyExceptionOnEverythingWhenInvalidOperationExceptionOccursAsync()
+        {
+            // given
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+            var invalidOperationException = new InvalidOperationException();
+
+            var failedPatientDependencyException =
+                new FailedPatientDependencyException(
+                    message: "Failed patient dependency error occurred, contact support.",
+                    innerException: invalidOperationException,
+                    data: invalidOperationException.Data);
+
+            var expectedPatientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient service dependency error occurred, contact support.",
+                    innerException: failedPatientDependencyException);
+
+            var patientServiceMock = new Mock<PatientService>(
+                this.ddsHttpBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
+
+            patientServiceMock.Setup(service =>
+                service.CreateRequestBody(inputNhsNumber, It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                    .Throws(invalidOperationException);
+
+            PatientService mockedPatientService = patientServiceMock.Object;
+
+            // when
+            ValueTask<Bundle> everythingTask =
+                mockedPatientService.EverythingAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
+
+            PatientDependencyException actualException =
+                await Assert.ThrowsAsync<PatientDependencyException>(everythingTask.AsTask);
+
+            // then
+            actualException.Should().BeEquivalentTo(expectedPatientDependencyException);
+
+            patientServiceMock.Verify(service =>
+                service.CreateRequestBody(
+                    inputNhsNumber,
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()),
+                        Times.Once);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedPatientDependencyException))),
+                        Times.Once);
+
+            patientServiceMock.VerifyNoOtherCalls();
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldThrowDependencyExceptionOnEverythingWhenHttpRequestExceptionHasStatusCodeAsync()
+        {
+            // given
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+
+            var httpRequestException =
+                new HttpRequestException(
+                    message: "Service Unavailable",
+                    inner: null,
+                    statusCode: HttpStatusCode.ServiceUnavailable);
+
+            var failedPatientDependencyException =
+                new FailedPatientDependencyException(
+                    message: "Failed patient HTTP dependency error occurred - " +
+                        $"HTTP {(int)HttpStatusCode.ServiceUnavailable} (ServiceUnavailable), contact support.",
+                    innerException: httpRequestException,
+                    data: httpRequestException.Data);
+
+            var expectedPatientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient service dependency error occurred, contact support.",
+                    innerException: failedPatientDependencyException);
+
+            var patientServiceMock = new Mock<PatientService>(
+                this.ddsHttpBrokerMock.Object,
+                this.loggingBrokerMock.Object)
+            {
+                CallBase = true
+            };
+
+            patientServiceMock.Setup(service =>
+                service.CreateRequestBody(inputNhsNumber, It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                    .Throws(httpRequestException);
+
+            PatientService mockedPatientService = patientServiceMock.Object;
+
+            // when
+            ValueTask<Bundle> everythingTask =
+                mockedPatientService.EverythingAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
+
+            PatientDependencyException actualException =
+                await Assert.ThrowsAsync<PatientDependencyException>(everythingTask.AsTask);
+
+            // then
+            actualException.Should().BeEquivalentTo(expectedPatientDependencyException);
+
+            patientServiceMock.Verify(service =>
+                service.CreateRequestBody(
+                    inputNhsNumber,
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>()),
+                        Times.Once);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedPatientDependencyException))),
                         Times.Once);
 
             patientServiceMock.VerifyNoOtherCalls();

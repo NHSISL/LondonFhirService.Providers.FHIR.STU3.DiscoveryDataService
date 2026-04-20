@@ -29,6 +29,7 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
 
             this.tokenHttp = new HttpClient();
             this.apiHttp = new HttpClient();
+            this.apiHttp.Timeout = TimeSpan.FromSeconds(ddsConfigurations.Timeout);
 
             if (!string.IsNullOrWhiteSpace(ddsConfigurations.BaseUrl))
             {

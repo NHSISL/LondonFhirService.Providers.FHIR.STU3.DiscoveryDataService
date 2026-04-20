@@ -3,15 +3,15 @@
 // ---------------------------------------------------------
 
 using System;
-using LondonFhirService.Providers.FHIR.STU3.Abstractions.Models.Exceptions;
+using System.Collections;
 using Xeptions;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions
 {
-    public class PatientDependencyException : Xeption, IFhirDependencyException
+    public class FailedPatientDependencyException : Xeption
     {
-        public PatientDependencyException(string message, Exception innerException)
-            : base(message, innerException)
+        public FailedPatientDependencyException(string message, Exception innerException, IDictionary data)
+            : base(message, innerException, data)
         { }
     }
 }

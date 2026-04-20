@@ -3,6 +3,7 @@
 // ---------------------------------------------------------
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
@@ -45,6 +46,26 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                         data: operationCanceledException.Data);
 
                 throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
+            }
+            catch (HttpRequestException httpRequestException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: BuildHttpRequestExceptionMessage(httpRequestException),
+                        innerException: httpRequestException,
+                        data: httpRequestException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
+            }
+            catch (InvalidOperationException invalidOperationException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: "Failed patient dependency error occurred, contact support.",
+                        innerException: invalidOperationException,
+                        data: invalidOperationException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
             }
             catch (Exception exception)
             {
@@ -89,6 +110,26 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 
                 throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
             }
+            catch (HttpRequestException httpRequestException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: BuildHttpRequestExceptionMessage(httpRequestException),
+                        innerException: httpRequestException,
+                        data: httpRequestException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
+            }
+            catch (InvalidOperationException invalidOperationException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: "Failed patient dependency error occurred, contact support.",
+                        innerException: invalidOperationException,
+                        data: invalidOperationException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
+            }
             catch (Exception exception)
             {
                 var failedPatientServiceException =
@@ -123,6 +164,18 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             return pdsServiceException;
         }
 
+        private async ValueTask<PatientDependencyException> CreateAndLogDependencyException(Xeption exception)
+        {
+            var patientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient service dependency error occurred, contact support.",
+                    innerException: exception);
+
+            await this.loggingBroker.LogErrorAsync(patientDependencyException);
+
+            return patientDependencyException;
+        }
+
         private async ValueTask<PatientDependencyException> CreateAndLogDependencyCancellationExceptionAsync(
             Xeption exception)
         {
@@ -134,6 +187,16 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             await this.loggingBroker.LogErrorAsync(patientDependencyException);
 
             return patientDependencyException;
+        }
+
+        private static string BuildHttpRequestExceptionMessage(HttpRequestException httpRequestException)
+        {
+            return httpRequestException.StatusCode.HasValue
+                ? $"Failed patient HTTP dependency error occurred - " +
+                    $"HTTP {(int)httpRequestException.StatusCode.Value} " +
+                    $"({httpRequestException.StatusCode.Value}), contact support."
+                : "Failed patient HTTP dependency error occurred - " +
+                    "no HTTP status code returned (possible network failure), contact support.";
         }
     }
 }
