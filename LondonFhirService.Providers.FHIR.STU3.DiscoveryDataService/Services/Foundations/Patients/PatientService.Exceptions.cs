@@ -25,6 +25,27 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             {
                 throw await CreateAndLogValidationExceptionAsync(invalidArgumentPatientServiceException);
             }
+            catch (OperationCanceledException operationCanceledException)
+                when (operationCanceledException.CancellationToken.IsCancellationRequested)
+            {
+                var cancelledPatientServiceException =
+                    new CancelledPatientServiceException(
+                        message: "Patient service was cancelled, please try again.",
+                        innerException: operationCanceledException,
+                        data: operationCanceledException.Data);
+
+                throw await CreateAndLogDependencyCancellationExceptionAsync(cancelledPatientServiceException);
+            }
+            catch (OperationCanceledException operationCanceledException)
+            {
+                var failedPatientServiceException =
+                    new FailedPatientServiceException(
+                        message: "Network connectivity failure occurred, please check connection and try again.",
+                        innerException: operationCanceledException,
+                        data: operationCanceledException.Data);
+
+                throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
+            }
             catch (Exception exception)
             {
                 var failedPatientServiceException =
@@ -46,6 +67,27 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             catch (InvalidArgumentPatientServiceException invalidArgumentPatientServiceException)
             {
                 throw await CreateAndLogValidationExceptionAsync(invalidArgumentPatientServiceException);
+            }
+            catch (OperationCanceledException operationCanceledException)
+                when (operationCanceledException.CancellationToken.IsCancellationRequested)
+            {
+                var cancelledPatientServiceException =
+                    new CancelledPatientServiceException(
+                        message: "Patient service was cancelled, please try again.",
+                        innerException: operationCanceledException,
+                        data: operationCanceledException.Data);
+
+                throw await CreateAndLogDependencyCancellationExceptionAsync(cancelledPatientServiceException);
+            }
+            catch (OperationCanceledException operationCanceledException)
+            {
+                var failedPatientServiceException =
+                    new FailedPatientServiceException(
+                        message: "Network connectivity failure occurred, please check connection and try again.",
+                        innerException: operationCanceledException,
+                        data: operationCanceledException.Data);
+
+                throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
             }
             catch (Exception exception)
             {
@@ -79,6 +121,19 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             await this.loggingBroker.LogErrorAsync(pdsServiceException);
 
             return pdsServiceException;
+        }
+
+        private async ValueTask<PatientDependencyException> CreateAndLogDependencyCancellationExceptionAsync(
+            Xeption exception)
+        {
+            var patientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient dependency cancellation error occurred, please try again.",
+                    innerException: exception);
+
+            await this.loggingBroker.LogErrorAsync(patientDependencyException);
+
+            return patientDependencyException;
         }
     }
 }
