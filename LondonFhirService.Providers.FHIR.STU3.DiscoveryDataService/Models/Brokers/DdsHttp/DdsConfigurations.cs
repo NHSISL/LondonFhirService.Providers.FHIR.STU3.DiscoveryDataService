@@ -14,6 +14,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brok
         public string Source { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public string System { get; set; } = string.Empty;
-        public int Timeout { get; set; } = 100;
+        public int TimeoutSeconds { get; set; } = 100;
     }
 }
