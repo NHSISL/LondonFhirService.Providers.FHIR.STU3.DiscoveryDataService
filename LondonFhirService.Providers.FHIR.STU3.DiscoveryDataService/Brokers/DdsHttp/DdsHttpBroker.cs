@@ -27,14 +27,15 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
             this.ddsConfigurations =
                 ddsConfigurations ?? throw new ArgumentNullException(nameof(ddsConfigurations));
 
+
             this.tokenHttp = new HttpClient
             {
-                Timeout = TimeSpan.FromSeconds(ddsConfigurations.Timeout)
+                Timeout = TimeSpan.FromSeconds(ddsConfigurations.TimeoutSeconds)
             };
 
             this.apiHttp = new HttpClient
             {
-                Timeout = TimeSpan.FromSeconds(ddsConfigurations.Timeout)
+                Timeout = TimeSpan.FromSeconds(ddsConfigurations.TimeoutSeconds)
             };
 
             if (!string.IsNullOrWhiteSpace(ddsConfigurations.BaseUrl))
@@ -56,8 +57,9 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
                 Encoding.UTF8,
                 "application/json");
 
+
             using var timeoutCts =
-                new CancellationTokenSource(TimeSpan.FromSeconds(this.ddsConfigurations.Timeout));
+                new CancellationTokenSource(TimeSpan.FromSeconds(this.ddsConfigurations.TimeoutSeconds));
 
             using var linkedCts =
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
