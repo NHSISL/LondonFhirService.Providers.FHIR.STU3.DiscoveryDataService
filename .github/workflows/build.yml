@@ -9,8 +9,6 @@ on:
     - synchronize
     - reopened
     - closed
-    branches:
-    - main
 jobs:
   build:
     name: Build
