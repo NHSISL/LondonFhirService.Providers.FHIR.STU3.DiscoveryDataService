@@ -49,9 +49,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Hl7.Fhir.STU3" Version="6.2.0" />
+	  <PackageReference Include="Hl7.Fhir.STU3" Version="6.2.1" />
 	  <PackageReference Include="LondonFhirService.Providers.FHIR.STU3.Abstractions" Version="0.6.0" />
-	  <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
+	  <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
 	  <PackageReference Include="RESTFulSense" Version="3.2.0" />
 	  <PackageReference Include="Xeption" Version="2.9.0" />
 	</ItemGroup>
