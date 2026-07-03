@@ -154,7 +154,8 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastruct
                 {
                     PullRequest = new PullRequestEvent
                     {
-                        Types = ["opened", "edited", "synchronize", "reopened", "closed"]
+                        Types = ["opened", "edited", "synchronize", "reopened", "closed"],
+                        Branches = [branchName]
                     }
                 },
 
