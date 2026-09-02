@@ -32,9 +32,6 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers
             InitializeClients(serviceProvider);
         }
 
-        public override string Source => this.configurations.Source;
-        public override string Code => this.configurations.Code;
-        public override string System => this.configurations.System;
         public override IPatientResource Patients => this.patientResource;
 
         public override string DisplayName => "Discovery Data Service FHIR® Care Connect API";
