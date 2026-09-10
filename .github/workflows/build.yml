@@ -12,10 +12,8 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
-    - name: Enable long paths for Git
-      run: git config --system core.longpaths true
     - name: Check out
       uses: actions/checkout@v5
     - name: Setup .Net
@@ -43,6 +41,7 @@ jobs:
           Write-Host "Running tests for: $($project.FullName)"
           dotnet test $project.FullName --no-build --verbosity normal
         }
+      shell: pwsh
   add_tag:
     name: Tag and Release
     runs-on: ubuntu-latest
