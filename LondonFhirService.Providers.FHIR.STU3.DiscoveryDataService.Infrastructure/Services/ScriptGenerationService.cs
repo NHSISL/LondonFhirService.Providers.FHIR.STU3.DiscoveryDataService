@@ -102,11 +102,10 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastruct
                     },
                     {
                         "add_tag",
-                        new TagJobV2(
+                        new TagJobV3(
                             runsOn: BuildMachines.UbuntuLatest,
                             dependsOn: "build",
                             projectRelativePath: $"{projectName}/{projectName}.csproj",
-                            githubToken: "${{ secrets.PAT_FOR_TAGGING }}",
                             branchName: branchName)
                         {
                             Name = "Tag and Release"
@@ -114,11 +113,11 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastruct
                     },
                     {
                         "publish",
-                        new PublishJobV4(
+                        new NugetTrustedPublishingJob(
                             runsOn: BuildMachines.UbuntuLatest,
                             dependsOn: "add_tag",
                             dotNetVersion: dotNetVersion,
-                            nugetApiKey: "${{ secrets.NUGET_ACCESS }}")
+                            nugetUser: "${{ secrets.NUGET_USER }}")
                         {
                             Name = "Publish to NuGet"
                         }
