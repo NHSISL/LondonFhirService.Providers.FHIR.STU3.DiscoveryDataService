@@ -1,4 +1,4 @@
-// ---------------------------------------------------------
+﻿// ---------------------------------------------------------
 // Copyright (c) North East London ICB. All rights reserved.
 // ---------------------------------------------------------
 
@@ -6,7 +6,6 @@ using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Providers;
 using Microsoft.Extensions.Configuration;
 using Tynamix.ObjectFiller;
-using Xunit.Abstractions;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Integration
 {
