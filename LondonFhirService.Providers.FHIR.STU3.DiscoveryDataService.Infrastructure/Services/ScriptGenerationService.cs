@@ -79,7 +79,13 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastruct
                                         $projects = Get-ChildItem -Path . -Filter "*Tests.Unit*.csproj" -Recurse
                                         foreach ($project in $projects) {
                                           Write-Host "Running tests for: $($project.FullName)"
-                                          dotnet test $project.FullName --no-build --verbosity normal
+                                          $testArguments = @(
+                                            "--project", $project.FullName,
+                                            "--no-build",
+                                            "--verbosity", "normal",
+                                            "--ignore-exit-code", "8")
+
+                                          dotnet test @testArguments
                                         }
                                         """
                                 },
@@ -93,7 +99,13 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Infrastruct
                                         $projects = Get-ChildItem -Path . -Filter "*Tests.Acceptance*.csproj" -Recurse
                                         foreach ($project in $projects) {
                                           Write-Host "Running tests for: $($project.FullName)"
-                                          dotnet test $project.FullName --no-build --verbosity normal
+                                          $testArguments = @(
+                                            "--project", $project.FullName,
+                                            "--no-build",
+                                            "--verbosity", "normal",
+                                            "--ignore-exit-code", "8")
+
+                                          dotnet test @testArguments
                                         }
                                         """
                                 }

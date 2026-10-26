@@ -30,7 +30,13 @@ jobs:
 
         foreach ($project in $projects) {
           Write-Host "Running tests for: $($project.FullName)"
-          dotnet test $project.FullName --no-build --verbosity normal
+          $testArguments = @(
+            "--project", $project.FullName,
+            "--no-build",
+            "--verbosity", "normal",
+            "--ignore-exit-code", "8")
+
+          dotnet test @testArguments
         }
       shell: pwsh
     - name: Run Acceptance Tests
@@ -39,7 +45,13 @@ jobs:
 
         foreach ($project in $projects) {
           Write-Host "Running tests for: $($project.FullName)"
-          dotnet test $project.FullName --no-build --verbosity normal
+          $testArguments = @(
+            "--project", $project.FullName,
+            "--no-build",
+            "--verbosity", "normal",
+            "--ignore-exit-code", "8")
+
+          dotnet test @testArguments
         }
       shell: pwsh
   add_tag:
