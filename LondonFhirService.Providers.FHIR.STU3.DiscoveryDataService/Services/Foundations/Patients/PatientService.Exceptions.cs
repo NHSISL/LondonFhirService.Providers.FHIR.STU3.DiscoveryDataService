@@ -3,6 +3,7 @@
 // ---------------------------------------------------------
 
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
@@ -61,6 +62,16 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                         data: httpResponseException.Data);
 
                 throw await CreateAndLogDependencyValidationExceptionAsync(notFoundPatientException);
+            }
+            catch (HttpResponseException httpResponseException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: BuildHttpResponseExceptionMessage(httpResponseException),
+                        innerException: httpResponseException,
+                        data: httpResponseException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
             }
             catch (HttpRequestException httpRequestException)
             {
@@ -145,6 +156,16 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                         data: httpResponseException.Data);
 
                 throw await CreateAndLogDependencyValidationExceptionAsync(notFoundPatientException);
+            }
+            catch (HttpResponseException httpResponseException)
+            {
+                var failedPatientDependencyException =
+                    new FailedPatientDependencyException(
+                        message: BuildHttpResponseExceptionMessage(httpResponseException),
+                        innerException: httpResponseException,
+                        data: httpResponseException.Data);
+
+                throw await CreateAndLogDependencyException(failedPatientDependencyException);
             }
             catch (HttpRequestException httpRequestException)
             {
@@ -249,12 +270,18 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                 PatientNotFoundTitlePrefix,
                 StringComparison.OrdinalIgnoreCase) is true;
 
-        private static string BuildHttpRequestExceptionMessage(HttpRequestException httpRequestException)
+        private static string BuildHttpResponseExceptionMessage(HttpResponseException httpResponseException) =>
+            BuildFailedHttpDependencyMessage(httpResponseException.HttpResponseMessage?.StatusCode);
+
+        private static string BuildHttpRequestExceptionMessage(HttpRequestException httpRequestException) =>
+            BuildFailedHttpDependencyMessage(httpRequestException.StatusCode);
+
+        private static string BuildFailedHttpDependencyMessage(HttpStatusCode? statusCode)
         {
-            return httpRequestException.StatusCode.HasValue
+            return statusCode.HasValue
                 ? $"Failed patient HTTP dependency error occurred - " +
-                    $"HTTP {(int)httpRequestException.StatusCode.Value} " +
-                    $"({httpRequestException.StatusCode.Value}), contact support."
+                    $"HTTP {(int)statusCode.Value} " +
+                    $"({statusCode.Value}), contact support."
                 : "Failed patient HTTP dependency error occurred - " +
                     "no HTTP status code returned (possible network failure), contact support.";
         }
