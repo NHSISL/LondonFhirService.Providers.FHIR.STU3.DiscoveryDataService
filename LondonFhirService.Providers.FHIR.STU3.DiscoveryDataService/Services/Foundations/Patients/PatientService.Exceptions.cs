@@ -8,12 +8,15 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
+using RESTFulSense.Exceptions;
 using Xeptions;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients
 {
     internal partial class PatientService
     {
+        private const string PatientNotFoundTitlePrefix = "NotFound:";
+
         private delegate ValueTask<Bundle> ReturningBundleFunction();
         private delegate ValueTask<string> ReturningStringFunction();
 
@@ -47,6 +50,17 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
                         data: operationCanceledException.Data);
 
                 throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
+            }
+            catch (HttpResponseException httpResponseException)
+                when (IsPatientNotFound(httpResponseException))
+            {
+                var notFoundPatientException =
+                    new NotFoundPatientException(
+                        message: httpResponseException.Message,
+                        innerException: httpResponseException,
+                        data: httpResponseException.Data);
+
+                throw await CreateAndLogDependencyValidationExceptionAsync(notFoundPatientException);
             }
             catch (HttpRequestException httpRequestException)
             {
@@ -121,6 +135,17 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 
                 throw await CreateAndLogServiceExceptionAsync(failedPatientServiceException);
             }
+            catch (HttpResponseException httpResponseException)
+                when (IsPatientNotFound(httpResponseException))
+            {
+                var notFoundPatientException =
+                    new NotFoundPatientException(
+                        message: httpResponseException.Message,
+                        innerException: httpResponseException,
+                        data: httpResponseException.Data);
+
+                throw await CreateAndLogDependencyValidationExceptionAsync(notFoundPatientException);
+            }
             catch (HttpRequestException httpRequestException)
             {
                 var failedPatientDependencyException =
@@ -175,6 +200,19 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
             return pdsServiceException;
         }
 
+        private async ValueTask<PatientDependencyValidationException>
+            CreateAndLogDependencyValidationExceptionAsync(Xeption exception)
+        {
+            var patientDependencyValidationException =
+                new PatientDependencyValidationException(
+                    message: "Patient dependency validation error occurred, fix the errors and try again.",
+                    innerException: exception);
+
+            await this.loggingBroker.LogErrorAsync(patientDependencyValidationException);
+
+            return patientDependencyValidationException;
+        }
+
         private async ValueTask<PatientDependencyException> CreateAndLogDependencyException(Xeption exception)
         {
             var patientDependencyException =
@@ -199,6 +237,17 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations
 
             return patientDependencyException;
         }
+
+        /// <summary>
+        /// The dependency answers a patient it does not hold with a problem details body titled
+        /// "NotFound:", and a 500 status rather than a 404. The title is what tells it apart from
+        /// a genuine fault, so it is read whatever the status. A bare 404 without that title is a
+        /// wrong address rather than an unknown patient, and stays a dependency failure.
+        /// </summary>
+        private static bool IsPatientNotFound(HttpResponseException httpResponseException) =>
+            httpResponseException.Message?.StartsWith(
+                PatientNotFoundTitlePrefix,
+                StringComparison.OrdinalIgnoreCase) is true;
 
         private static string BuildHttpRequestExceptionMessage(HttpRequestException httpRequestException)
         {
