@@ -13,6 +13,7 @@ using Hl7.Fhir.Serialization;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Foundations.Patients;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Services.Patients.Exceptions;
 using Moq;
+using RESTFulSense.Exceptions;
 using Task = System.Threading.Tasks.Task;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.Services.Patients
@@ -441,6 +442,123 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             this.loggingBrokerMock.Verify(broker =>
                 broker.LogErrorAsync(It.Is(SameExceptionAs(actualException))),
                     Times.Once);
+
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public async Task ShouldThrowDependencyValidationExceptionOnEverythingWhenPatientIsNotFoundAsync()
+        {
+            // given
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+
+            string notFoundTitle =
+                $"NotFound:Patient resource not found.  CorrelationId: {GetRandomString()}";
+
+            var httpResponseInternalServerErrorException =
+                new HttpResponseInternalServerErrorException(
+                    responseMessage: new HttpResponseMessage(HttpStatusCode.InternalServerError),
+                    message: notFoundTitle);
+
+            httpResponseInternalServerErrorException.AddData(
+                key: "nhsNumber",
+                values: inputNhsNumber);
+
+            var notFoundPatientException =
+                new NotFoundPatientException(
+                    message: notFoundTitle,
+                    innerException: httpResponseInternalServerErrorException,
+                    data: httpResponseInternalServerErrorException.Data);
+
+            var expectedPatientDependencyValidationException =
+                new PatientDependencyValidationException(
+                    message: "Patient dependency validation error occurred, fix the errors and try again.",
+                    innerException: notFoundPatientException);
+
+            this.ddsHttpBrokerMock.Setup(broker =>
+                broker.GetStructuredPatientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(httpResponseInternalServerErrorException);
+
+            // when
+            ValueTask<Bundle> everythingTask =
+                this.patientService.EverythingAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
+
+            PatientDependencyValidationException actualException =
+                await Assert.ThrowsAsync<PatientDependencyValidationException>(everythingTask.AsTask);
+
+            // then
+            actualException.Should().BeEquivalentTo(expectedPatientDependencyValidationException);
+
+            this.ddsHttpBrokerMock.Verify(broker =>
+                broker.GetStructuredPatientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+                    Times.Once);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedPatientDependencyValidationException))),
+                        Times.Once);
+
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
+
+        [Theory]
+        [InlineData(HttpStatusCode.InternalServerError)]
+        [InlineData(HttpStatusCode.NotFound)]
+        [InlineData(HttpStatusCode.ServiceUnavailable)]
+        public async Task ShouldThrowDependencyExceptionOnEverythingWhenDependencyRespondsWithAnErrorAsync(
+            HttpStatusCode statusCode)
+        {
+            // given
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+            string randomResponseMessage = GetRandomString();
+
+            var httpResponseException =
+                new HttpResponseException(
+                    httpResponseMessage: new HttpResponseMessage(statusCode),
+                    message: randomResponseMessage);
+
+            var failedPatientDependencyException =
+                new FailedPatientDependencyException(
+                    message: "Failed patient HTTP dependency error occurred - " +
+                        $"HTTP {(int)statusCode} ({statusCode}), contact support.",
+                    innerException: httpResponseException,
+                    data: httpResponseException.Data);
+
+            var expectedPatientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient service dependency error occurred, contact support.",
+                    innerException: failedPatientDependencyException);
+
+            this.ddsHttpBrokerMock.Setup(broker =>
+                broker.GetStructuredPatientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(httpResponseException);
+
+            // when
+            ValueTask<Bundle> everythingTask =
+                this.patientService.EverythingAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
+
+            PatientDependencyException actualException =
+                await Assert.ThrowsAsync<PatientDependencyException>(everythingTask.AsTask);
+
+            // then
+            actualException.Should().BeEquivalentTo(expectedPatientDependencyException);
+
+            this.ddsHttpBrokerMock.Verify(broker =>
+                broker.GetStructuredPatientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+                    Times.Once);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedPatientDependencyException))),
+                        Times.Once);
 
             this.ddsHttpBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();

@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Models.Brokers.DdsHttp;
+using RESTFulSense.Services;
 
 namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.DdsHttp
 {
@@ -68,7 +69,11 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Brokers.Dds
                 .PostAsync(ddsConfigurations.GetStructuredRecordRelativeUrl, content, linkedCts.Token)
                 .ConfigureAwait(false);
 
-            response.EnsureSuccessStatusCode();
+            // Validated rather than EnsureSuccessStatusCode, which discards the body. The
+            // dependency explains a failure in a problem details body - a patient it does not
+            // hold comes back as a 500 titled "NotFound:" - and the typed exception thrown here
+            // carries that title as its message and the body's errors as its data.
+            await ValidationService.ValidateHttpResponseAsync(response).ConfigureAwait(false);
 
             string json = await response
                 .Content
