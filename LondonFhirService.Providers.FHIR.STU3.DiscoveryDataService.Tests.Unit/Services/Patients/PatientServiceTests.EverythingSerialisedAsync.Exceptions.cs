@@ -462,5 +462,63 @@ namespace LondonFhirService.Providers.FHIR.STU3.DiscoveryDataService.Tests.Unit.
             this.ddsHttpBrokerMock.VerifyNoOtherCalls();
             this.loggingBrokerMock.VerifyNoOtherCalls();
         }
+
+        [Theory]
+        [InlineData(HttpStatusCode.InternalServerError)]
+        [InlineData(HttpStatusCode.NotFound)]
+        [InlineData(HttpStatusCode.ServiceUnavailable)]
+        public async Task ShouldThrowDependencyExceptionOnEverythingSerialisedWhenDependencyRespondsWithAnErrorAsync(
+            HttpStatusCode statusCode)
+        {
+            // given
+            string randomNhsNumber = GetRandomString();
+            string inputNhsNumber = randomNhsNumber;
+            string randomResponseMessage = GetRandomString();
+
+            var httpResponseException =
+                new HttpResponseException(
+                    httpResponseMessage: new HttpResponseMessage(statusCode),
+                    message: randomResponseMessage);
+
+            var failedPatientDependencyException =
+                new FailedPatientDependencyException(
+                    message: "Failed patient HTTP dependency error occurred - " +
+                        $"HTTP {(int)statusCode} ({statusCode}), contact support.",
+                    innerException: httpResponseException,
+                    data: httpResponseException.Data);
+
+            var expectedPatientDependencyException =
+                new PatientDependencyException(
+                    message: "Patient service dependency error occurred, contact support.",
+                    innerException: failedPatientDependencyException);
+
+            this.ddsHttpBrokerMock.Setup(broker =>
+                broker.GetStructuredPatientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(httpResponseException);
+
+            // when
+            ValueTask<string> everythingSerialisedTask =
+                this.patientService.EverythingSerialisedAsync(
+                    id: inputNhsNumber,
+                    cancellationToken: default);
+
+            PatientDependencyException actualException =
+                await Assert.ThrowsAsync<PatientDependencyException>(everythingSerialisedTask.AsTask);
+
+            // then
+            actualException.Should().BeEquivalentTo(expectedPatientDependencyException);
+
+            this.ddsHttpBrokerMock.Verify(broker =>
+                broker.GetStructuredPatientAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+                    Times.Once);
+
+            this.loggingBrokerMock.Verify(broker =>
+                broker.LogErrorAsync(It.Is(SameExceptionAs(
+                    expectedPatientDependencyException))),
+                        Times.Once);
+
+            this.ddsHttpBrokerMock.VerifyNoOtherCalls();
+            this.loggingBrokerMock.VerifyNoOtherCalls();
+        }
     }
 }
